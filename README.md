@@ -1,4 +1,4 @@
-# Tribler
+# Tribler - wxPhoenix TUPT backup branch
 
 We make use of submodules, so remember using the --recursive argument when cloning this repo.
 

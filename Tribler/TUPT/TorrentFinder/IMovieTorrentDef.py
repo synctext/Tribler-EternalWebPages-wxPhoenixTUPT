@@ -1,4 +1,4 @@
-class IMovieTorrentDef():
+class IMovieTorrentDef(object):
     
     def GetSeeders(self):
         """Return the amount of seeders for the torrent

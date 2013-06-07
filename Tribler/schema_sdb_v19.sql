@@ -1,5 +1,5 @@
 -- Tribler SQLite Database
--- Version: 9
+-- Version: 19
 --
 -- History:
 --   v1: Published as part of Tribler 4.5
@@ -11,7 +11,8 @@
 --   v8: Published as part of Tribler 5.4
 --   v8: Published as part of Tribler 5.5/6.0?
 --   v9: Published as part of Tribler 5.5
-
+--  v10: Published as part of TUTP
+--
 -- 
 -- See Tribler/Core/CacheDB/sqlitecachedb.py updateDB() for exact version diffs.
 --
@@ -267,6 +268,15 @@ CREATE TABLE IF NOT EXISTS _Channels (
 );
 CREATE VIEW Channels AS SELECT * FROM _Channels WHERE deleted_at IS NULL;
 
+----------------------------------------
+-- v10: Non-personal channel flags
+CREATE TABLE IF NOT EXISTS TUPTFlags (
+  channel_id                integer         NOT NULL,
+  generated                 integer         NOT NULL,
+  FOREIGN KEY (channel_id) REFERENCES _Channels(id) ON DELETE CASCADE
+);
+----------------------------------------
+
 CREATE TABLE IF NOT EXISTS _ChannelTorrents (
   id                        integer         PRIMARY KEY ASC,
   dispersy_id               integer,
@@ -477,7 +487,7 @@ INSERT INTO TorrentStatus VALUES (2, 'dead', NULL);
 INSERT INTO TorrentSource VALUES (0, '', 'Unknown');
 INSERT INTO TorrentSource VALUES (1, 'BC', 'Received from other user');
 
-INSERT INTO MyInfo VALUES ('version', 18);
+INSERT INTO MyInfo VALUES ('version', 19);
 
 INSERT INTO MetaDataTypes ('name') VALUES ('name');
 INSERT INTO MetaDataTypes ('name') VALUES ('description');

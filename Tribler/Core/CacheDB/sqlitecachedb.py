@@ -47,10 +47,11 @@ except ImportError:
 # Changed from 15 to 16 changed all swift_torrent_hash that was an empty string to NULL
 # Changed from 16 to 17 cleaning buddycast, preference, terms, and subtitles tables, removed indices
 # Changed from 17 to 18 added swift-thumbnails/video-info metadatatypes
+# Changed from 18 to 19 added generated flags to user channels
 
 # Arno, 2012-08-01: WARNING You must also update the version number that is
 # written to the DB in the schema_sdb_v*.sql file!!!
-CURRENT_MAIN_DB_VERSION = 18
+CURRENT_MAIN_DB_VERSION = 19
 
 config_dir = None
 CREATE_SQL_FILE = None
@@ -423,7 +424,7 @@ class SQLiteCacheDBBase:
             return
         db_ver = int(db_ver)
         curr_ver = int(curr_ver)
-
+        
         self.db_diff = max(0, curr_ver - db_ver)
         if not self.db_diff:
             self.db_diff = sum(os.path.exists(os.path.join(config_dir, filename)) if config_dir else 0 for filename in ["upgradingdb.txt", "upgradingdb2.txt", "upgradingdb3.txt"])
@@ -1439,6 +1440,30 @@ ALTER TABLE Peer ADD COLUMN services integer DEFAULT 0;
 
             INSERT INTO MetaDataTypes ('name') VALUES ('name');
             INSERT INTO MetaDataTypes ('name') VALUES ('description');
+            """
+            self.execute_write(sql, commit=False)
+            
+        if fromver < 8:
+            sql = \
+            """
+            --------------------------------------
+            -- Creating BundlerPreference DB
+            ----------------------------------
+            CREATE TABLE BundlerPreference (
+              query         text PRIMARY KEY,
+              bundle_mode   integer
+            );
+            """
+            self.execute_write(sql, commit=False)
+
+        if fromver < 19:
+            sql = \
+            """
+            CREATE TABLE IF NOT EXISTS TUPTFlags (
+              channel_id                integer         NOT NULL,
+              generated                 integer         NOT NULL,
+              FOREIGN KEY (channel_id) REFERENCES _Channels(id) ON DELETE CASCADE
+            );
             """
             self.execute_write(sql, commit=False)
 

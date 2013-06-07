@@ -15,6 +15,8 @@ from Tribler.Main.globals import DefaultDownloadStartupConfig
 
 from Tribler.PluginManager.PluginManager import PluginManager
 
+from Tribler.TUPT.Channels.MovieInserter import MovieInserter
+
 from Tribler.TUPT.Matcher.IMatcherPlugin import IMatcherPlugin
 from Tribler.TUPT.Matcher.MatcherControl import MatcherControl
 
@@ -83,23 +85,29 @@ class TUPTControl:
         """Start downloading the selected movie in HD quality"""
         #Download the torrent.
         if self.__movieTorrentIterator.HasHDTorrent(n):
-           self.__DownloadURL(self.__movieTorrentIterator.GetNextHDTorrent(n).GetTorrentURL())
+            self.__DownloadURL(self.__movieTorrentIterator.GetNextHDTorrent(n).GetTorrentURL(), 
+                               self.__movieTorrentIterator.GetMovie(n).movie,
+                               True)
         #Update the infobar. This has to be done regardless of if a torrent was added or not.
         if not self.__movieTorrentIterator.HasSDTorrent(n):
-            self.__infoBar.RemoveSDQuality() 
+            self.__infoBar.RemoveSDQuality()
 
     def DownloadSDMovie(self, n = 0):
         """Start downliading the selected movie in SD quality"""
-       #Check if a torrent exists.
+        #Check if a torrent exists.
         if self.__movieTorrentIterator.HasSDTorrent(n):
-            self.__DownloadURL(self.__movieTorrentIterator.GetNextSDTorrent(n).GetTorrentURL())
+            self.__DownloadURL(self.__movieTorrentIterator.GetNextSDTorrent(n).GetTorrentURL(), 
+                               self.__movieTorrentIterator.GetMovie(n).movie,
+                               False)
         #Update the infobar. This has to be done regardless of if a torrent was added or not.
         if not self.__movieTorrentIterator.HasSDTorrent(n):
             self.__infoBar.RemoveSDQuality()
     
-    def __DownloadURL(self, url):
-        """Download the URL using Tribler and start playing."""
+    def __DownloadURL(self, url, movie, isHD):
+        """Download the URL using Tribler and start playing.
+        """
         #Start downloading the torrent.
+        torrentDef = None
         if url.startswith('http://'):            
             torrentDef  = TorrentDef.load_from_url(url)
         elif url.startswith('magnet:?'):
@@ -108,13 +116,16 @@ class TUPTControl:
             torrentDef = self.__callbackTorrentdef
             self.__callbackTorrentdef = None
             self.__callbackTDEvent.clear()
-            
+
         session = Session.get_instance()
         #Check if a torrent is already added.        
         downloadState = self.__FindDownloadStateByInfoHash(torrentDef.infohash)   
         if downloadState == None:
             #Add the torrent if is not already added
             downloadState = session.start_download(torrentDef).network_get_state(None, False, sessioncalling=True)
+            #Update the channel
+            channelInserter = MovieInserter()
+            channelInserter.InsertThreaded(torrentDef, movie, isHD)
          
         libraryManager = LibraryManager.getInstance()
         libraryManager.PlayDownloadState(downloadState)      

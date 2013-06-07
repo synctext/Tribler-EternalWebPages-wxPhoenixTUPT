@@ -9,7 +9,7 @@ class TorrentFinderPluginManagerStub(PluginManagerStub):
         
     def __init__(self, loopTorrentFinder = False, delaySlowTorrentFinder = 0, changedResult = False):
         
-        self.torrentFinderPlugins = [TorrentFinderPluginStub(returnOnlyHD = not changedResult), slowTorrentFinder(delaySlowTorrentFinder)]
+        self.torrentFinderPlugins = [TorrentFinderPluginStub(returnOnlyHD = changedResult), slowTorrentFinder(delaySlowTorrentFinder)]
         if loopTorrentFinder:
             self.torrentFinderPlugins.append(LoopingTorrentFinderPlugin())
             

@@ -90,6 +90,7 @@ class TestTorrentFinderControl(unittest.TestCase):
         
     def test_FindTorrent_CallBack_OnlyCalledOnChange_Change(self):
         """Test if the callback is only called on a change in results."""
+        self.__timesCallbacked = 0
         #Arrange
         self.__torrentFinderControl = TorrentFinderControl(TorrentFinderPluginManagerStub(changedResult = True), self.__movie, self.callback)
         #Act
@@ -99,7 +100,7 @@ class TestTorrentFinderControl(unittest.TestCase):
         self.assertEqual(2, self.__timesCallbacked)
     
     def callback(self):
-        self.__timesCallbacked += 2  
+        self.__timesCallbacked += 1  
     
 if __name__ == '__main__':
     unittest.main()

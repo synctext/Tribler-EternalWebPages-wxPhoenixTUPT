@@ -56,7 +56,7 @@ class TorrentFinderControl(Thread):
                 self.ProcessTorrentDef(item, trust)
         #Check to see if a callback needs to be made. The callback needs to be made if a result changed.
         if not oldHDResult == self.HasHDTorrent() or not oldSDResult == self.HasSDTorrent():
-                self.__resultCallback()
+                self.__resultCallback(self.__movie)
     
     def ProcessTorrentDef(self, definition, trust):
         """Inspect a returned torrent definition and place it in our list if appropriate

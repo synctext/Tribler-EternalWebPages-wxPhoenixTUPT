@@ -99,7 +99,7 @@ class TestTorrentFinderControl(unittest.TestCase):
         #Assert
         self.assertEqual(2, self.__timesCallbacked)
     
-    def callback(self):
+    def callback(self, movie):
         self.__timesCallbacked += 1  
     
 if __name__ == '__main__':

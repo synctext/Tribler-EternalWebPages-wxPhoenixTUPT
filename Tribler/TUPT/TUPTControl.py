@@ -62,6 +62,7 @@ class TUPTControl:
             #Check if there a movies on the website.
             if movies is not None:
                 self.__movieTorrentIterator = MovieTorrentIterator()
+                self.__infoBar = TorrentInfoBar(self.webview, self, self.__movieTorrentIterator)
                 for movie in movies:     
                     #Correct movie information
                     if trust == 1:
@@ -70,12 +71,13 @@ class TUPTControl:
                     else:
                         movie = self.matcherControl.CorrectMovie(movie)
                     #Find torrents corresponding to the movie.
-                    self.__torrentFinder = TorrentFinderControl(self.pluginmanager, movie)
-                    self.__torrentFinder.start()
-                    self.__torrentFinder.join()
+                    self.__torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)
+                    self.__torrentFinder.start()                    
                     movieTorrent = MovieTorrent(movie, self.__torrentFinder)                    
-                    self.__movieTorrentIterator.append(movieTorrent)
-                self.__infoBar = TorrentInfoBar(self.webview, self, self.__movieTorrentIterator)
+                    self.__movieTorrentIterator.append(movieTorrent)                    
+    
+    def UpdateInforBar(self, movie):
+        self.__infoBar.Update()
     
     def DownloadHDMovie(self, n = 0):
         """Start downloading the selected movie in HD quality"""
@@ -139,66 +141,85 @@ class TorrentInfoBar():
     __comboBox = None
     __comboboxMovieTorrent = None
     __comboboxMovieTorrentMap = None
+    __movieTorrentIterator = None
     
     
     def __init__(self, webview, __tuptControl, movieTorrentIterator):
+        self.__webview = webview
+        self.__tuptControl = __tuptControl
+        self.__movieTorrentIterator = movieTorrentIterator
+        self.Update()
+    
+    def Update(self):    
         #Get all the movies with torrents
         validMovieIndices = []
-        for i in range(movieTorrentIterator.GetSize()):
-            if movieTorrentIterator.GetMovie(i).HasTorrent():
+        for i in range(self.__movieTorrentIterator.GetSize()):
+            if self.__movieTorrentIterator.GetMovie(i).HasTorrent():
                 validMovieIndices.append(i)
         #Set movie infobar information
-        if len(validMovieIndices)>0:
-            self.__webview = webview
-            self.__tuptControl = __tuptControl
+        if len(validMovieIndices)>0:               
+           self.ShowMovieState(validMovieIndices)
+        else:
+            self.ShowParsingState()            
             
-            # Label1
-            text = " <b>The following movie was found: </b>"
-            if len(validMovieIndices) > 1:
-                text = " <b>The following movies were found: </b>"
-            label1 = wx.StaticText(webview.infobaroverlay)
-            label1.SetLabelMarkup(text)
+        self.__webview.ShowInfoBar()    
+    
+    def ShowParsingState(self):
+        """Show parsing state."""
+            # Create parseLabel
+        parseText = " <b>Parsing website.... </b>"
+        parseLabel = wx.StaticText(self.__webview.infobaroverlay)
+        parseLabel.SetLabelMarkup(parseText)
+        self.__webview.SetInfoBarContents((parseLabel,))
             
-            # ComboboxMovieTorrent
-            self.__comboboxMovieTorrent = self.__CreateStdComboCtrl(200, self.MovieSelectionUpdated)
-            for i in validMovieIndices:
-                self.__comboboxMovieTorrent.Append(movieTorrentIterator.GetMovie(i).movie.dictionary['title'])
-            self.__comboboxMovieTorrent.SetValue(movieTorrentIterator.GetMovie(validMovieIndices[0]).movie.dictionary['title']) 
+    def ShowMovieState(self, validMovieIndices):
+        """Show movie state"""
+         # movieLabel
+        movieText = " <b>The following movie was found: </b>"
+        if len(validMovieIndices) > 1:
+            movieText = " <b>The following movies were found: </b>"
+        movieLabel = wx.StaticText(self.__webview.infobaroverlay)
+        movieLabel.SetLabelMarkup(movieText)
             
-            #Register mapping of valid indices
-            self.__comboboxMovieTorrentMap = validMovieIndices
+        # ComboboxMovieTorrent
+        self.__comboboxMovieTorrent = self.__CreateStdComboCtrl(200, self.MovieSelectionUpdated)
+        for i in validMovieIndices:
+            self.__comboboxMovieTorrent.Append(self.__movieTorrentIterator.GetMovie(i).movie.dictionary['title'])
+            self.__comboboxMovieTorrent.SetValue(self.__movieTorrentIterator.GetMovie(validMovieIndices[0]).movie.dictionary['title']) 
             
-            # Label2
-            text2 = "<b>. Do you want to watch this movie in:</b>"
-            label2 = wx.StaticText(webview.infobaroverlay)
-            label2.SetLabelMarkup(text2)
-            label2.SetSizeHints(-1,-1,220,-1)
+        #Register mapping of valid indices
+        self.__comboboxMovieTorrentMap = validMovieIndices
             
-            #Create the quality selection.
-            self.__comboBox = self.__CreateStdComboCtrl()
-            movieTorrent = movieTorrentIterator.GetMovie(validMovieIndices[0])
-            if movieTorrent.HasHDTorrent():
-                self.__comboBox.Append(self.HDCHOICE)
-                #Set default value to HD Quality.
-                self.__comboBox.SetValue(self.HDCHOICE)  
-            if movieTorrent.HasSDTorrent():
-                self.__comboBox.Append(self.SDCHOICE)
-            #Set default value to SD quality if no HD quality    
-            if not movieTorrent.HasHDTorrent():
-                self.__comboBox.SetValue(self.SDCHOICE)
-                       
-            #Create play button.
-            button = wx.Button(self.__webview.infobaroverlay)
-            button.SetLabel("Play!")
-            button.SetBackgroundColour(self.__webview.infobaroverlay.COLOR_BACKGROUND_SEL)
-            button.SetSizeHints(-1,-1,150,-1)
-            
-            #Register action.
-            self.__webview.Bind(wx.EVT_BUTTON, self.playButtonPressed, button)
-            
-            #Add all elements to the infobar.
-            self.__webview.SetInfoBarContents((label1,), (self.__comboboxMovieTorrent,), (label2,), (self.__comboBox,), (button,))
-            self.__webview.ShowInfoBar()
+        # QualityLabel
+        qualityText = "<b>. Do you want to watch this movie in:</b>"
+        qualityLabel = wx.StaticText(self.__webview.infobaroverlay)
+        qualityLabel.SetLabelMarkup(qualityText)
+        qualityLabel.SetSizeHints(-1,-1,220,-1)
+        
+        #Create the quality selection.
+        self.__comboBox = self.__CreateStdComboCtrl()
+        movieTorrent = self.__movieTorrentIterator.GetMovie(validMovieIndices[0])
+        if movieTorrent.HasHDTorrent():
+            self.__comboBox.Append(self.HDCHOICE)
+            #Set default value to HD Quality.
+            self.__comboBox.SetValue(self.HDCHOICE)  
+        if movieTorrent.HasSDTorrent():
+            self.__comboBox.Append(self.SDCHOICE)
+        #Set default value to SD quality if no HD quality    
+        if not movieTorrent.HasHDTorrent():
+            self.__comboBox.SetValue(self.SDCHOICE)
+                   
+        #Create play button.
+        button = wx.Button(self.__webview.infobaroverlay)
+        button.SetLabel("Play!")
+        button.SetBackgroundColour(self.__webview.infobaroverlay.COLOR_BACKGROUND_SEL)
+        button.SetSizeHints(-1,-1,150,-1)
+        
+        #Register action.
+        self.__webview.Bind(wx.EVT_BUTTON, self.playButtonPressed, button)
+        
+        #Add all elements to the infobar.
+        self.__webview.SetInfoBarContents((movieLabel,), (self.__comboboxMovieTorrent,), (qualityLabel,), (self.__comboBox,), (button,))
     
     def playButtonPressed(self, event):
         """Callback for when the user wants to play the movie.

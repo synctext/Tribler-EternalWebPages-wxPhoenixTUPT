@@ -12,7 +12,7 @@ from Tribler.Main.vwxGUI.list import XRCPanel
 class WebBrowser(XRCPanel):
     '''WebView is a class that allows you to browse the worldwideweb.'''    
    
-    DEBUG = False
+    DEBUG = True
    
     def __init__(self, parent=None):
         XRCPanel.__init__(self, parent)

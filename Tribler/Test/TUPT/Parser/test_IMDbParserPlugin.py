@@ -131,4 +131,7 @@ class TestIMDbParserPlugin(unittest.TestCase):
            self.assertEqual(self.__result[key], result.dictionary[key])
 
     
+if __name__ == '__main__':
+    unittest.main()
+     
     

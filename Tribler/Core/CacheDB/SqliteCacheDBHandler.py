@@ -2413,8 +2413,10 @@ class VoteCastDBHandler(BasicDBHandler):
             sql = "SELECT channel_id, vote FROM ChannelVotes WHERE voter_id ISNULL"
 
             self.my_votes = {}
-            for channel_id, vote in self._db.fetchall(sql):
-                self.my_votes[channel_id] = vote
+            raw = self._db.fetchall(sql)
+            if raw is not None:
+                for channel_id, vote in raw:
+                    self.my_votes[channel_id] = vote
         return self.my_votes
 
 
@@ -3366,6 +3368,10 @@ class ChannelCastDBHandler(BasicDBHandler):
             sql += " name like '%" + keyword + "%' and"
         sql = sql[:-3]
         return self._getChannels(sql)
+    
+    def searchChannelNameStartsWith(self, name):
+        sql = "SELECT id, name, description, dispersy_cid, modified, nr_torrents, nr_favorite, nr_spam FROM Channels WHERE name like '" + name + "%'"
+        return self._getChannels(sql)
 
     def getChannelNames(self, permids):
         names = {}
@@ -3500,6 +3506,20 @@ class ChannelCastDBHandler(BasicDBHandler):
         if self._channel_id:
             return self._channel_id
         return self._db.fetchone('SELECT id FROM Channels WHERE peer_id ISNULL LIMIT 1')
+    
+    def getMyChannelIds(self):
+        self._db.waitForUpdateComplete()
+        return self._db.fetchall('SELECT id FROM Channels WHERE peer_id IS NULL')
+    
+    def dropChannelByNameDesc(self, name, description):
+        sql = "DELETE FROM _channels WHERE name = %s AND description = %s" % (name, description)
+        self._db.waitForUpdateComplete()
+        self._db.execute_write(sql)
+
+    def dropChannelById(self, channel_id):
+        sql = "DELETE FROM _channels WHERE id = %s" % str(channel_id)
+        self._db.waitForUpdateComplete()
+        self._db.execute_write(sql)
 
     def getSubscribersCount(self, channel_id):
         """returns the number of subscribers in integer format"""

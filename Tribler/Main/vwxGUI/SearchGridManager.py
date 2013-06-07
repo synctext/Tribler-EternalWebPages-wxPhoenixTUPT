@@ -1295,6 +1295,24 @@ class ChannelManager:
         if self.channelcast_db._channel_id:
             return 1, [self.getChannel(self.channelcast_db._channel_id)]
         return 0, []
+    
+    def getAllMyChannels(self):
+        ownChannels = self.channelcast_db.getMyChannelIds()
+        return len(ownChannels), ownChannels
+    
+    def removeChannelById(self, channel_id):
+        self.channelcast_db.dropChannelById(channel_id)
+    
+    def removeChannelByNameDesc(self, name, description):
+        self.channelcast_db.dropChannelByNameDesc(name, description)
+        
+    def findChannelsWithNameLike(self, name):
+        out = []
+        for tuple in self.channelcast_db.searchChannelNameStartsWith(name):
+            channel = Channel(tuple[0],tuple[1],tuple[2],tuple[3],tuple[4],tuple[5],tuple[6],tuple[7],tuple[8],tuple[9])
+            out.append(channel)
+            pass
+        return out
 
     def _createChannel(self, hit):
         return Channel(*hit)

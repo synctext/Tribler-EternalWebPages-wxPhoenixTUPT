@@ -3,8 +3,15 @@ import time
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 
 class MovieChannelControl(object):
+    """Controller for channels specifically for TUPT
+        retrieved movies.
+        
+        Every movie will go in its corresponding channel
+        based on the release year.
+    """
     
     __channelManager = None
+    __single = None
     
     def __init__(self, initLater = False):
         if not initLater:
@@ -31,7 +38,7 @@ class MovieChannelControl(object):
     def initWithChannelSearchManager(self, manager):
         self.__channelManager = manager
         MovieChannelControl.__single = self
-
+    
     def GetChannelNameForYear(self, year):
         """Return the pretty name for a channel of a certain year
         """
@@ -56,26 +63,50 @@ class MovieChannelControl(object):
             #Create a new channel
             return self.__CreateChannel(channelName, self.GetChannelDescriptionForYear(year))
         elif totalHits == 1:
-            #Yay, in the perfect world our channel already exists
+            #In the perfect world our channel already exists
             #and is the only one of its kind
-            return hits[0].id
+            return hits.values()[0].id
         else:
-            #Ruh roh, we found multiple channels that resemble our
+            #We found multiple channels that resemble our
             #requested channel. Select the right one.
-            return self.__FindRightChannel(hits, year)
+            return self.__FindRightChannel(hits.values(), year)
         
-    def __GetMyChannel(self, name, description):
-        """Busy-wait for torrent creation to finish
+    def RemoveChannelByYear(self, year):
+        """Given a year, remove our local database entry for it
         """
-        hasChannel, hits = self.__channelManager.getMyChannels()
-        if hasChannel == 0:
-            time.sleep(0.1)
-            return self.__GetMyChannel(name, description)
+        name = self.GetChannelNameForYear(year)
+        desc = self.GetChannelDescriptionForYear(year)
+        self.__channelManager.removeChannelByNameDesc(name, desc)
+        
+    def RemoveChannelById(self, channelId):
+        """Given a channel id, remove our local database entry for it
+        """
+        self.__channelManager.removeChannelById(channelId)
+        
+    def GetKnownTUPTChannels(self):
+        """Return all TUPT channels we can find in our database
+        """
+        emptyName = self.GetChannelNameForYear("")
+        return self.__channelManager.findChannelsWithNameLike(emptyName)
+        
+    def GetKnownYears(self):
+        """Return all TUPT channel years we can find in our database
+        """
+        out = []
+        emptyName = self.GetChannelNameForYear("")
+        for channel in self.__channelManager.findChannelsWithNameLike(emptyName):
+            value = int(channel.name[len(emptyName):])
+            out.append(value)
+        return out
+    
+    def __GetMyChannel(self, name, description, sleep = 0.1, timeout = 1.0):
+        """Get our own channel
+        """
+        hasChannel, hits = self.__channelManager.getAllMyChannels()
         for channel in hits:
             if channel.name == name and channel.description == description:
                 return channel
-        time.sleep(0.1)
-        return self.__GetMyChannel(name, description)
+        return None
             
     def __CreateChannel(self, name, description):
         """Create a channel with a certain name and return its id

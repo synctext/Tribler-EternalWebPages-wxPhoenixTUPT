@@ -1830,8 +1830,9 @@ class MinMaxSlider(wx.Panel):
 
     def GetCurrentValues(self):
         length = self.range[1] - self.range[0]
-        min_val = math.pow(self.arrow_up_rect[0] - self.range[0], self.base) / math.pow(length, self.base)
-        max_val = math.pow(self.arrow_down_rect[0] - self.range[0], self.base) / math.pow(length, self.base)
+        baseLength = math.pow(max(length,0), self.base)
+        min_val = 0 if baseLength == 0 else math.pow(max(self.arrow_up_rect[0] - self.range[0],0), self.base) / baseLength
+        max_val = 0 if baseLength == 0 else math.pow(max(self.arrow_down_rect[0] - self.range[0],0), self.base) / baseLength
         min_val = self.min + min_val * (self.max -self.min)
         max_val = self.min + max_val * (self.max -self.min)
         return (min_val, max_val)

@@ -223,24 +223,17 @@ class WebBrowser(XRCPanel):
         self.infobaroverlay.Hide()
         self.__fixInfobarHeight(0)
         self.Refresh()
-        
-    def ShowInfoBar(self, animtime=0.3, smoothness=10, finalHeight=28.0):      
+
+    def ShowInfoBar(self, finalHeight=28.0):      
         """Animated InfoBar drop down.
-            Will attempt to be done in 'animtime' seconds
-            Will chop the animation frames up in 'animtime'/'smoothness' iterations
             Will grow to a maximum of finalHeight if the sizer deems it appropriate
         """
         self.infobaroverlay.Show()
-        for i in range(smoothness):
-            start = time.time()
-            height = int(finalHeight/smoothness*(i+1))
-            self.infobaroverlay.SetSizeHints(-1, -1,-1, height)
-            self.infobaroverlay.vSizer.Layout()
-            self.infobaroverlay.Layout()
-            self.__fixInfobarHeight(height)
-            self.Refresh()
-            remtime = animtime/smoothness-(time.time() - start)
-            time.sleep(remtime if remtime > 0 else 0)
+        self.infobaroverlay.SetSizeHints(-1, -1,-1, finalHeight)
+        self.infobaroverlay.vSizer.Layout()
+        self.infobaroverlay.Layout()
+        self.__fixInfobarHeight(finalHeight)
+        self.Refresh
             
     class NavigatingNewPageEvent(object):
         

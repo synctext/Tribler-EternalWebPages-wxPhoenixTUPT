@@ -23,23 +23,19 @@ class ChannelManagerStub(object):
         self.search = list
     
     def getChannelHits(self):
-        hits = []
+        hits = {}
         for channel in self.miniDB:
             for kw in self.search:
                 if difflib.SequenceMatcher(None, kw, channel.name).ratio() == 1 or difflib.SequenceMatcher(None, kw, channel.description).ratio() == 1:
-                    hits.append(channel)
+                    hits[channel.id] = channel
                     break
         return len(hits), hits, hits    #Our new hits equal our hits
     
-    def fakeDBInsertion(self, name, description):
-        time.sleep(0.3)
+    def createChannel(self, name, description):
         channel = Channel(len(self.miniDB),0,name,description,0,0,0,0,0,1)
         self.miniDB.append(channel)
-        
-    def createChannel(self, name, description):
-        thread.start_new(self.fakeDBInsertion, (name, description))
     
-    def getMyChannels(self):
+    def getAllMyChannels(self):
         out = []
         for channel in self.miniDB:
             if channel.my_channel == 1:

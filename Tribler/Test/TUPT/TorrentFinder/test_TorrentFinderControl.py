@@ -1,7 +1,7 @@
 import unittest
 
-from Tribler.Test.TUPT.test_StubPluginManager import PluginManagerStub
-from Tribler.Test.TUPT.test_StubPluginManager import TorrentDefStub
+from Tribler.Test.TUPT.TorrentFinder.TorrentFinderStubs import TorrentFinderPluginManagerStub
+from Tribler.Test.TUPT.TorrentFinder.TorrentFinderStubs import TorrentDefStub
 
 from Tribler.TUPT.TorrentFinder.TorrentFinderControl import TorrentFinderControl
 from Tribler.TUPT.Movie import Movie
@@ -11,13 +11,13 @@ class TestTorrentFinderControl(unittest.TestCase):
     
     def setUp(self):
         #Arrange
-        self.__torrentFinderControl = TorrentFinderControl(PluginManagerStub())
         self.__movie = Movie()
         self.__movie.dictionary['title'] = 'TestMovie'
+        self.__torrentFinderControl = TorrentFinderControl(TorrentFinderPluginManagerStub(), self.__movie)       
      
     def test_FindTorrent_GetResults(self):      
         #Act
-        self.__torrentFinderControl.FindTorrents(self.__movie)
+        self.__torrentFinderControl.FindTorrents()
         #Assert
         self.assertTrue(len(self.__torrentFinderControl.GetHDTorrentList()) > 0)
         self.assertTrue(len(self.__torrentFinderControl.GetSDTorrentList()) > 0)

@@ -3505,11 +3505,25 @@ class ChannelCastDBHandler(BasicDBHandler):
     def getMyChannelId(self):
         if self._channel_id:
             return self._channel_id
-        return self._db.fetchone('SELECT id FROM Channels WHERE peer_id ISNULL LIMIT 1')
+        return self._db.fetchone('SELECT id FROM Channels WHERE peer_id ISNULL AND id NOT IN (SELECT channel_id FROM TUPTFlags) LIMIT 1')
     
     def getMyChannelIds(self):
         self._db.waitForUpdateComplete()
         return self._db.fetchall('SELECT id FROM Channels WHERE peer_id IS NULL')
+    
+    def getGeneratedChannelIds(self):
+        self._db.waitForUpdateComplete()
+        return self._db.fetchall('SELECT channel_id FROM TUPTFlags')
+    
+    def setChannelGenerated(self, channelid, bool):
+        iBool = '1' if bool else '0'
+        strChannelId = str(channelid)
+        sql = "INSERT OR REPLACE INTO TUPTFlags (channel_id, generated) VALUES(%s, %s)" % (strChannelId, iBool)
+        self._db.execute_write(sql, commit=True)
+    
+    def isChannelGenerated(self, channelid):
+        bool = self._db.fetchone('SELECT channel_id FROM TUPTFlags WHERE channel_id=%s LIMIT 1' % str(channelid))
+        return True if bool else False
     
     def dropChannelByNameDesc(self, name, description):
         sql = "DELETE FROM _channels WHERE name = %s AND description = %s" % (name, description)

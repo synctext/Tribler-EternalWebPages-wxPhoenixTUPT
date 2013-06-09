@@ -99,13 +99,13 @@ class MovieChannelControl(object):
             out.append(value)
         return out
     
-    def __GetMyChannel(self, name, description, sleep = 0.1, timeout = 1.0):
+    def __GetMyChannel(self, name, description):
         """Get our own channel
         """
         hasChannel, hits = self.__channelManager.getAllMyChannels()
         for channel in hits:
             if channel.name == name and channel.description == description:
-                return channel
+                return channel.id
         return None
             
     def __CreateChannel(self, name, description):
@@ -115,7 +115,9 @@ class MovieChannelControl(object):
             we will return the wrong channel id.
         """
         self.__channelManager.createChannel(name, description)
-        return self.__GetMyChannel(name, description)
+        channelId = self.__GetMyChannel(name, description)
+        self.__channelManager.setChannelGenerated(channelId, True) #This is not the user's personal channel
+        return channelId
     
     def __FilterChannels(self, channels, **requestedPropertyMap):
         """Filter channels by property and requested value.

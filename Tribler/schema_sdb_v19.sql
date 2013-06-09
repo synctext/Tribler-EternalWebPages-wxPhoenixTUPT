@@ -271,7 +271,7 @@ CREATE VIEW Channels AS SELECT * FROM _Channels WHERE deleted_at IS NULL;
 ----------------------------------------
 -- v10: Non-personal channel flags
 CREATE TABLE IF NOT EXISTS TUPTFlags (
-  channel_id                integer         NOT NULL,
+  channel_id                integer         PRIMARY KEY NOT NULL,
   generated                 integer         NOT NULL,
   FOREIGN KEY (channel_id) REFERENCES _Channels(id) ON DELETE CASCADE
 );

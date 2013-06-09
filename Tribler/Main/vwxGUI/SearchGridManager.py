@@ -1297,7 +1297,19 @@ class ChannelManager:
         return 0, []
     
     def getAllMyChannels(self):
-        ownChannels = self.channelcast_db.getMyChannelIds()
+        channelIds = self.channelcast_db.getMyChannelIds()
+        ownChannels = []
+        for id in channelIds:
+            channel = self.getChannel(id[0])
+            ownChannels.append(channel)
+        return len(ownChannels), ownChannels
+    
+    def getGeneratedChannels(self):
+        channelIds = self.channelcast_db.getGeneratedChannelIds()
+        ownChannels = []
+        for id in channelIds:
+            channel = self.getChannel(id[0])
+            ownChannels.append(channel)
         return len(ownChannels), ownChannels
     
     def removeChannelById(self, channel_id):
@@ -1613,6 +1625,12 @@ class ChannelManager:
 
         except (KeyError, AttributeError):
             return None
+
+    def setChannelGenerated(self, channelid, bool):
+        self.channelcast_db.setChannelGenerated(channelid, bool)
+    
+    def isChannelGenerated(self, channelid):
+        return self.channelcast_db.isChannelGenerated(channelid)
 
     @forcePrioDispersyThread
     def createChannel(self, name, description):

@@ -179,3 +179,6 @@ class MovieChannelControl(object):
     def RemoveTorrentFromChannel(self, channelID, torrentDef):
         self.__channelManager.removeTorrent(self.GetChannelObjectFromID(channelID), torrentDef.infohash)
         
+    def RenameChannelTorrent(self, channelID, torrentDef, name):
+        """Rename a torrent in a channel and notify the channel community of the changes"""
+        self.__channelManager.modifyTorrentName(channelID, torrentDef, name)

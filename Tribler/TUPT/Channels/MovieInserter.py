@@ -1,6 +1,7 @@
 import thread
 
 from Tribler.Core.TorrentDef import TorrentDef
+from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 
 from MovieChannelControl import MovieChannelControl
 
@@ -37,6 +38,12 @@ class MovieInserter(object):
         
         if not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
             self.__channelController.AddTorrentToChannel(channelId, torrentDef)
+            self.__channelController.RenameChannelTorrent(channelId, torrentDef, name)
+
+            gui = GUIUtility.getInstance()
+            mngr = gui.frame.librarylist.GetManager()
+            mngr.refresh()
+            
             
     def InsertThreaded(self, torrentDef, movie, isHD):
         """Same as Insert(), but threaded

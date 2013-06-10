@@ -1816,6 +1816,19 @@ class ChannelManager:
     def modifyTorrent(self, channel_id, channeltorrent_id, dict_changes, forward=True):
         community = self._disp_get_community_from_channel_id(channel_id)
         community.modifyTorrent(channeltorrent_id, dict_changes, forward=forward)
+        
+    def modifyTorrentName(self, channel_id, tdef, name, retries = 5):
+        self.channelcast_db._db.waitForUpdateComplete()
+        data = self.channelcast_db.getTorrentFromChannelId(channel_id, tdef.infohash, CHANNEL_REQ_COLUMNS)
+        
+        if not data:
+            sleep(0.3)
+            self.modifyTorrentName(channel_id, tdef, name, retries-1)
+            return
+        
+        torrent = self._createTorrent(data, False)
+
+        self.modifyTorrent(channel_id, torrent.channeltorrent_id, {'name': name})
 
     def spam(self, channel_id):
         self.do_vote(channel_id, -1)

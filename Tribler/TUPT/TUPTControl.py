@@ -115,15 +115,16 @@ class TUPTControl:
             self.__callbackTorrentdef = None
             self.__callbackTDEvent.clear()
 
+        #Update the channel
+        channelInserter = MovieInserter()
+        channelInserter.Insert(torrentDef, movie, isHD)
+
         session = Session.get_instance()
         #Check if a torrent is already added.        
         downloadState = self.__FindDownloadStateByInfoHash(torrentDef.infohash)   
         if downloadState == None:
             #Add the torrent if is not already added
             downloadState = session.start_download(torrentDef).network_get_state(None, False, sessioncalling=True)
-            #Update the channel
-            channelInserter = MovieInserter()
-            channelInserter.InsertThreaded(torrentDef, movie, isHD)
          
         libraryManager = LibraryManager.getInstance()
         libraryManager.PlayDownloadState(downloadState)      

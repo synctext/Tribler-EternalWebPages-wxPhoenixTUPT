@@ -38,6 +38,7 @@ class TorrentFinderControl(Thread):
         plugins = self.__pluginManager.GetPluginDescriptorsForCategory('TorrentFinder')
         self.__threads = []
         for plugin_info in plugins:
+            print "DEBUG: Starting thread to find torrents with plugin:" + plugin_info.name
             thread = TorrentFinderControl.PluginThread(self, plugin_info, self.__movie)
             thread.start()
             self.__threads.append(thread)

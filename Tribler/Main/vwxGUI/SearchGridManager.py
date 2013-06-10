@@ -1817,11 +1817,11 @@ class ChannelManager:
         community = self._disp_get_community_from_channel_id(channel_id)
         community.modifyTorrent(channeltorrent_id, dict_changes, forward=forward)
         
-    def modifyTorrentName(self, channel_id, tdef, name, retries = 5):
+    def modifyTorrentName(self, channel_id, tdef, name, retries = 1):
         self.channelcast_db._db.waitForUpdateComplete()
         data = self.channelcast_db.getTorrentFromChannelId(channel_id, tdef.infohash, CHANNEL_REQ_COLUMNS)
         
-        if not data:
+        if not data and retries > 0:
             sleep(0.3)
             self.modifyTorrentName(channel_id, tdef, name, retries-1)
             return

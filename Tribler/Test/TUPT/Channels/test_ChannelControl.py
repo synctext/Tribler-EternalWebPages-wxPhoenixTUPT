@@ -50,6 +50,9 @@ class ChannelManagerStub(object):
     
     def removeTorrent(self, channelid, infohash):
         pass
+    
+    def setChannelGenerated(self, channelId, bool):
+        pass
 
 class TestChannelControl(unittest.TestCase):
     '''Tests for adding channels with the ChannelControl'''

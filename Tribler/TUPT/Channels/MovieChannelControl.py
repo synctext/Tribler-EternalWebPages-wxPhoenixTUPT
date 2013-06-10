@@ -179,6 +179,12 @@ class MovieChannelControl(object):
             Returns False otherwise.
         """
         return self.GetChannelObjectFromID(channelID).getTorrent(torrentDef.infohash) is not None
+    
+    def ChannelGetTorrentFromName(self, channelID, name):
+        """Returns a torrent from a name, if it exits. Otherwise
+            returns None.
+        """
+        return self.__channelManager.getTorrentFromName(self.GetChannelObjectFromID(channelID), name)
 
     def RemoveTorrentFromChannel(self, channelID, torrentDef):
         self.__channelManager.removeTorrent(self.GetChannelObjectFromID(channelID), torrentDef.infohash)

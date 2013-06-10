@@ -25,6 +25,27 @@ class MovieInserter(object):
         hd = "[HD] " if isHD else ""
         return hd + title + " " + releaseYear
         
+    def AddTorrentToChannel(self, channelId, torrentDef, name):
+        """Add a torrent to the local database and notify the Dispersy community
+            #of the change.
+        """
+        self.__channelController.AddTorrentToChannel(channelId, torrentDef)
+        self.__channelController.RenameChannelTorrent(channelId, torrentDef, name)
+        
+        #Update the front-end to show the standardized name
+        gui = GUIUtility.getInstance()
+        mngr = gui.frame.librarylist.GetManager()
+        mngr.refresh()
+        
+    def ResolveTorrentConflict(self, channelId, torrentDef, otherInfoHash):
+        """We have found a different 'best' torrent than the channel.
+            Try to find out which of the torrents is actually the best
+            and update accordingly.
+            
+            For now, resolve by doing nothing 
+        """
+        pass
+        
     def Insert(self, torrentDef, movie, isHD):
         """Put a movie in a channel given a certain torrentDef
         """
@@ -41,17 +62,16 @@ class MovieInserter(object):
         self.__channelController.UpVoteChannel(channelId)
         
         if not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
-            #If the torrent is not already in the channel
-            #Add it to the local database and notify the Dispersy community
-            #of the change.
-            self.__channelController.AddTorrentToChannel(channelId, torrentDef)
-            self.__channelController.RenameChannelTorrent(channelId, torrentDef, name)
-            
-            #Update the front-end to show the standardized name
-            gui = GUIUtility.getInstance()
-            mngr = gui.frame.librarylist.GetManager()
-            mngr.refresh()
-            
+            duplicateInfoHash = self.__channelController.ChannelGetTorrentFromName(channelId, name)
+            if not duplicateInfoHash:
+                #If the torrent is not already in the channel
+                #Add it to the local database and notify the Dispersy community
+                #of the change.
+                self.AddTorrentToChannel(channelId, torrentDef, name)
+            else:
+                #There is already a definition of our torrent in this channel.
+                #Try to find out which one is the best.
+                self.ResolveTorrentConflict(channelId, torrentDef, duplicateInfoHash)
             
     def InsertThreaded(self, torrentDef, movie, isHD):
         """Same as Insert(), but threaded

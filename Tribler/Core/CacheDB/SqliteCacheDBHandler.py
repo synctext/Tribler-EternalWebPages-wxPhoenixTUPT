@@ -3234,6 +3234,11 @@ class ChannelCastDBHandler(BasicDBHandler):
         sql = "SELECT " + ", ".join(keys) + " FROM Torrent, ChannelTorrents WHERE Torrent.torrent_id = ChannelTorrents.torrent_id AND channel_id = ? And ChannelTorrents.id NOT IN (Select channeltorrent_id From PlaylistTorrents) ORDER BY time_stamp DESC"
         results = self._db.fetchall(sql, (channel_id,))
         return self.__fixTorrents(keys, results)
+    
+    def getTorrentFromName(self, channel_id, name, keys):
+        sql = "SELECT " + ", ".join(keys) + " FROM Torrent, ChannelTorrents WHERE Torrent.torrent_id = ChannelTorrents.torrent_id AND ChannelTorrents.name = '%s' LIMIT 1" % name
+        result = self._db.fetchone(sql)
+        return self.__fixTorrent(keys, result)
 
     def getPlaylistForTorrent(self, channeltorrent_id, keys):
         sql = "SELECT " + ", ".join(keys) + ", count(DISTINCT channeltorrent_id) FROM Playlists, PlaylistTorrents WHERE Playlists.id = PlaylistTorrents.playlist_id AND channeltorrent_id = ?"

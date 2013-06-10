@@ -1323,7 +1323,6 @@ class ChannelManager:
         for tuple in self.channelcast_db.searchChannelNameStartsWith(name):
             channel = Channel(tuple[0],tuple[1],tuple[2],tuple[3],tuple[4],tuple[5],tuple[6],tuple[7],tuple[8],tuple[9])
             out.append(channel)
-            pass
         return out
 
     def _createChannel(self, hit):
@@ -1359,6 +1358,10 @@ class ChannelManager:
     def getRecentReceivedTorrentsFromChannel(self, channel, filterTorrents=True, limit=None):
         hits = self.channelcast_db.getRecentReceivedTorrentsFromChannelId(channel.id, CHANNEL_REQ_COLUMNS, limit)
         return self._createTorrents(hits, filterTorrents, {channel.id: channel})
+    
+    def getTorrentFromName(self, channel, name):
+        data = self.channelcast_db.getTorrentFromName(channel.id, name, CHANNEL_REQ_COLUMNS)
+        return self._createTorrent(data, channel)
 
     def getTorrentsNotInPlaylist(self, channel, filterTorrents=True):
         hits = self.channelcast_db.getTorrentsNotInPlaylist(channel.id, CHANNEL_REQ_COLUMNS)

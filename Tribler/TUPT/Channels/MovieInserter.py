@@ -36,10 +36,18 @@ class MovieInserter(object):
         
         channelId = self.__channelController.GetChannelIDForYear(year)
         
+        #Whether or not we add our torrent to this channel,
+        #it was determined to be the right channel. So upvote it.
+        self.__channelController.UpVoteChannel(channelId)
+        
         if not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
+            #If the torrent is not already in the channel
+            #Add it to the local database and notify the Dispersy community
+            #of the change.
             self.__channelController.AddTorrentToChannel(channelId, torrentDef)
             self.__channelController.RenameChannelTorrent(channelId, torrentDef, name)
-
+            
+            #Update the front-end to show the standardized name
             gui = GUIUtility.getInstance()
             mngr = gui.frame.librarylist.GetManager()
             mngr.refresh()

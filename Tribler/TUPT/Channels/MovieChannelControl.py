@@ -163,6 +163,10 @@ class MovieChannelControl(object):
     
     def GetChannelObjectFromID(self, channelID):
         return self.__channelManager.getChannel(channelID)
+    
+    def UpVoteChannel(self, channelID):
+        """Upvote a channel by favoriting it"""
+        self.__channelManager.favorite(channelID)
         
     def AddTorrentToChannel(self, channelID, torrentDef):
         """Returns True if we were successful in adding the torrent to the channel.

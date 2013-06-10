@@ -80,7 +80,7 @@ class WebBrowser(XRCPanel):
         self.loadlisteners = []
         
         '''Register the action on the event that a URL is being loaded and when finished loading'''
-        self.Bind(wx.html2.EVT_WEB_VIEW_NAVIGATING, self.onURLNavigating, self.webview)
+        self.Bind(wx.html2.EVT_WEB_VIEW_NAVIGATED, self.onURLNavigating, self.webview)
         self.Bind(wx.html2.EVT_WEB_VIEW_LOADED, self.onURLLoaded, self.webview)
         
         self.infobaroverlay.Bind(wx.EVT_ENTER_WINDOW, self.OnInfoBarMouseOver, self.infobaroverlay)
@@ -88,7 +88,7 @@ class WebBrowser(XRCPanel):
 
         self.HideInfoBar()
         
-        self.webview.SetMinSize((2000, -1))   #Fix initial expansion, 2.9.4.0 bug
+        wx.CallAfter(self.webview.SetMinSize,(2000, -1))   #Fix initial expansion, 2.9.4.0 bug
         
         if (self.DEBUG):
             self.webviewPanel.SetBackgroundColour(wx.Colour(255,255,255)) #Hide inital expansion, 2.9.4.0 bug
@@ -165,6 +165,9 @@ class WebBrowser(XRCPanel):
         self.infobaroverlay.SetForegroundColour(self.infobaroverlay.COLOR_FOREGROUND)
     
     def SetInfoBarContents(self, *orderedContents):
+        wx.CallAfter(self.__SetInfoBarContents, orderedContents)
+    
+    def SetInfoBarContents(self, *orderedContents):
         """Add content to the infobar in left -> right ordering
             Expects a list of tuples of a wxObject and a set of wxFlags
             For example:
@@ -214,8 +217,13 @@ class WebBrowser(XRCPanel):
         self.infobaroverlay.vSizer.Fit(self.webviewPanel)
         self.webviewPanel.GetSizer().SetItemMinSize(self.webview, (width, oHeight + diffHeight))
         self.webviewPanel.GetSizer().Fit(self.webview)
+        #Finally, lay it out
+        self.infobaroverlay.vSizer.Layout()
     
-    def HideInfoBar(self):     
+    def HideInfoBar(self):
+        wx.CallAfter(self.__HideInfoBar)
+    
+    def __HideInfoBar(self):     
         """Hide the InfoBar immediately
         """ 
         self.infobaroverlay.SetSizeHints(-1,0,-1,0)
@@ -224,7 +232,10 @@ class WebBrowser(XRCPanel):
         self.__fixInfobarHeight(0)
         self.Refresh()
 
-    def ShowInfoBar(self, finalHeight=28.0):      
+    def ShowInfoBar(self, finalHeight=28.0):
+        wx.CallAfter(self.__ShowInfoBar, finalHeight)
+
+    def __ShowInfoBar(self, finalHeight=28.0):      
         """Animated InfoBar drop down.
             Will grow to a maximum of finalHeight if the sizer deems it appropriate
         """
@@ -233,7 +244,7 @@ class WebBrowser(XRCPanel):
         self.infobaroverlay.vSizer.Layout()
         self.infobaroverlay.Layout()
         self.__fixInfobarHeight(finalHeight)
-        self.Refresh
+        self.Refresh()
             
     class NavigatingNewPageEvent(object):
         

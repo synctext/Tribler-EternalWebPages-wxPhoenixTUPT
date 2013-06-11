@@ -1,0 +1,248 @@
+\documentclass[tikz]{standalone}
+\usepackage{tikz-uml}
+\usepackage[T1]{fontenc}
+
+\newcommand{\pckgsep}{/ } 
+
+\begin{document}
+
+%%%%%%%%%%%%%
+%% GENERAL TUPT OVERVIEW
+%%%%%%%%%%%%%
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+\begin{umlpackage}[x=0, y=0]{Tribler}
+
+	\begin{umlpackage}[x=6, y=9]{PluginManager }
+		\umlemptyclass{PluginManager}
+	\end{umlpackage}
+
+	\begin{umlpackage}[x=0, y=0]{TUPT}
+		%%Class definitions
+		\umlemptyclass[x=1, y=4]{Movie}
+		\umlemptyclass[x=6, y=2]{TUPTControl}
+
+		\umlemptyclass[x=1, y=2]{MovieTorrentIterator}
+		\umlemptyclass[x=1, y=0]{MovieTorrent}
+		\umlemptyclass[x=6, y=0]{TorrentInfoBar}
+
+		\umlemptypackage[x=10, y=2]{Channels}
+		\umlemptypackage[x=3, y=6]{Matcher}
+		\umlemptypackage[x=6, y=6]{Parser}
+		\umlemptypackage[x=9, y=6]{TorrentFinder}
+
+		%%Associations
+		\umluniassoc[mult1=1,mult2=1]{TUPTControl}{MovieTorrentIterator} 
+		\umlcompo[mult1=1,mult2=*]{MovieTorrentIterator}{MovieTorrent}
+		\umlaggreg[mult1=1,mult2=*]{MovieTorrentIterator}{Movie} 
+		\umlcompo[mult1=1,mult2=1]{TUPTControl}{TorrentInfoBar}
+
+		\umluniassoc{TUPTControl}{Channels} 
+		\umluniassoc{TUPTControl}{Matcher} 
+		\umluniassoc{TUPTControl}{Parser} 
+		\umluniassoc{TUPTControl}{TorrentFinder} 
+
+		\umluniassoc{Matcher}{PluginManager}
+		\umluniassoc{Parser}{PluginManager}
+		\umluniassoc{TorrentFinder}{PluginManager}
+
+	\end{umlpackage}
+
+\end{umlpackage}
+
+\end{tikzpicture}
+
+%%%%%%%%%%%%%
+%% CHANNELS OVERVIEW
+%%%%%%%%%%%%%
+
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+\begin{umlpackage}[x=0, y=0]{Channels}
+	%%Class definitions
+	\umlclass[x=0, y=0]{MovieInserter}{}{
+		+ PrettyMovieName(movie, isHD)\\
+		+ AddTorrentToChannel(channelId, torrentDef, name)\\
+		+ ResolveTorrentConflict(channelId, torrentDef, otherInfoHash)\\
+		+ Insert(torrentDef, movie, isHD)\\
+		+ InsertThreaded(torrentDef, movie, isHD)()
+	}
+
+	\umlclass[x=11, y=0]{MovieChannelControl}{}{
+		+ initAuto()\\
+		+ initWithChannelSearchManager(manager)\\
+		+ GetChannelNameForYear(year)\\
+		+ GetChannelDescriptionForYear(year)\\
+		+ GetChannelIDForYear(year)\\
+		+ RemoveChannelByYear(year)\\
+		+ RemoveChannelById(channelId)\\
+		+ GetKnownTUPTChannels()\\
+		+ GetKnownYears()\\
+		+ GetChannelObjectFromID(channelID)\\
+		+ UpVoteChannel(channelID)\\
+		+ AddTorrentToChannel(channelID, torrentDef)\\
+		+ ChannelHasTorrent(channelID, torrentDef)\\
+		+ ChannelGetTorrentFromName(channelID, name)\\
+		+ RemoveTorrentFromChannel(channelID, torrentDef)\\
+		+ RenameChannelTorrent(channelID, torrentDef, name)
+	}
+
+	%%Associations
+	\umlaggreg[mult1=1,mult2=1]{MovieInserter}{MovieChannelControl} 
+\end{umlpackage}
+
+\end{tikzpicture}
+
+%%%%%%%%%%%%%
+%% MATCHER OVERVIEW
+%%%%%%%%%%%%%
+
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+\begin{umlpackage}[x=0, y=0]{Matcher}
+	%%Class definitions
+	\umlclass[x=0, y=3]{MatcherControl}{}{
+		+ CorrectMovie(movie)
+	}
+
+	\umlclass[x=6, y=3,type=interface]{IMatcherPlugin}{}{
+		+ MatchMovie(movie)\\
+		+ GetMovieAttributes()\\
+		+ GetAttribute(attribute)
+	}
+
+	\umlclass[x=6, y=0]{TheMovieDBMatcherPlugin}{}{
+
+	}
+
+	%%Associations
+	\umlreal{TheMovieDBMatcherPlugin}{IMatcherPlugin}
+	\umlaggreg[mult1=1,mult2=*]{MatcherControl}{IMatcherPlugin}
+	
+\end{umlpackage}
+
+\end{tikzpicture}
+
+%%%%%%%%%%%%%
+%% PARSER OVERVIEW
+%%%%%%%%%%%%%
+
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+\begin{umlpackage}[x=0, y=0]{Parser}
+	%%Class definitions
+	\umlclass[x=0, y=6]{ParserControl}{}{
+		+ HasParser(url)\\
+		+ ParseWebsite(url, html)
+	}
+
+	\umlclass[x=6, y=6,type=interface]{IParserPlugin}{}{
+		+ ParseWebSite(url, html)\\
+		+ GetParseableSites()
+	}
+
+	\umlclass[x=6, y=3]{IMDbParserPlugin}{}{
+
+	}
+
+	\umlclass[x=0, y=0]{NoParserFoundException}{}{
+
+	}
+
+	\umlclass[x=6, y=0]{IllegalParseResultException}{}{
+
+	}
+
+	%%Associations
+	\umlreal{IMDbParserPlugin}{IParserPlugin}
+	\umlaggreg[mult1=1,mult2=*]{ParserControl}{IParserPlugin}
+	\umluniassoc{ParserControl}{NoParserFoundException} 
+	\umluniassoc{ParserControl}{IllegalParseResultException} 
+	
+\end{umlpackage}
+
+\end{tikzpicture}
+
+%%%%%%%%%%%%%
+%% TORRENT FINDER OVERVIEW
+%%%%%%%%%%%%%
+
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+\begin{umlpackage}[x=0, y=0]{TorrentFinder}
+	\umlclass[x=6, y=3.5,type=interface]{IMovieTorrentDef}{}{
+		+ GetSeeders()\\
+		+ GetLeechers()\\
+		+ IsHighDef()\\
+		+ GetMovieDescriptor()\\
+		+ GetTorrentName()\\
+		+ GetTorrentURL()\\
+		+ GetTorrentProviderName()\\
+	}
+
+	\umlemptyclass[x=0, y=0]{FenopyMovieTorrentDef}
+	\umlemptyclass[x=6, y=0]{KatPhMovieTorrentDef}
+	\umlemptyclass[x=12, y=0]{TriblerMovieTorrentDef}
+
+	\umlclass[x=6, y=9.5,type=interface]{ITorrentFinderPlugin}{}{
+		+ GetTorrentDefsForMovie(movie)
+	}
+
+	\umlemptyclass[x=0, y=7]{FenopyTorrentFinderPlugin}
+	\umlemptyclass[x=6, y=7]{KatPhTorrentFinderPlugin}
+	\umlemptyclass[x=12, y=7]{TriblerTorrentFinderPlugin}
+
+	\umlclass[x=6, y=12]{PluginThread}{}{
+		+ run()
+	}
+
+	\umlemptyclass[x=11, y=12]{IllegalTorrentResultException}
+
+	\umlclass[x=-1, y=16]{SortedTorrentList}{}{
+		+ GetList()\\
+		+ Insert(torrentDef, trust)\\
+		+ SetUserDict(dict)
+	}
+
+	\umlclass[x=6, y=16]{TorrentFinderControl}{}{
+		+ FindTorrents()\\
+		+ ProcessTorrentDefList(torrentDefList, trust)\\
+		+ ProcessTorrentDef(definition, trust)\\
+		+ GetTorrentList()\\
+		+ GetHDTorrentList()\\
+		+ GetSDTorrentList()\\
+		+ HasTorrent()\\
+		+ HasHDTorrent()\\
+		+ HasSDTorrent()\\
+		+ run()\\
+	}
+
+	%%Associations
+	\umlreal{FenopyMovieTorrentDef}{IMovieTorrentDef}
+	\umlreal{KatPhMovieTorrentDef}{IMovieTorrentDef}
+	\umlreal{TriblerMovieTorrentDef}{IMovieTorrentDef}
+
+	\umluniassoc{FenopyTorrentFinderPlugin}{IMovieTorrentDef}
+	\umluniassoc{KatPhTorrentFinderPlugin}{IMovieTorrentDef}
+	\umluniassoc{TriblerTorrentFinderPlugin}{IMovieTorrentDef}
+
+	\umlreal{FenopyTorrentFinderPlugin}{ITorrentFinderPlugin}
+	\umlreal{KatPhTorrentFinderPlugin}{ITorrentFinderPlugin}
+	\umlreal{TriblerTorrentFinderPlugin}{ITorrentFinderPlugin}
+
+	\umlaggreg[mult1=1,mult2=1]{PluginThread}{ITorrentFinderPlugin}
+	\umluniassoc{PluginThread}{IllegalTorrentResultException}
+
+	\umlaggreg[mult1=1,mult2=*]{TorrentFinderControl}{PluginThread}
+	\umlcompo[mult1=1,mult2=2]{TorrentFinderControl}{SortedTorrentList}
+
+\end{umlpackage}
+
+\end{tikzpicture}
+
+\end{document}

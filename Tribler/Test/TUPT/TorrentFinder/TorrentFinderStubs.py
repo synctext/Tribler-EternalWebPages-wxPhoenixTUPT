@@ -3,11 +3,13 @@ from Tribler.Test.TUPT.TUPTStubs import PluginStub
 
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
 
+import time
 
 class TorrentFinderPluginManagerStub(PluginManagerStub):
         
-    def __init__(self, loopTorrentFinder = False):
-        self.torrentFinderPlugins = [TorrentFinderPluginStub()]
+    def __init__(self, loopTorrentFinder = False, delaySlowTorrentFinder = 0, changedResult = False):
+        
+        self.torrentFinderPlugins = [TorrentFinderPluginStub(returnOnlyHD = changedResult), slowTorrentFinder(delaySlowTorrentFinder)]
         if loopTorrentFinder:
             self.torrentFinderPlugins.append(LoopingTorrentFinderPlugin())
             
@@ -23,19 +25,30 @@ class TorrentFinderPluginStub(PluginStub):
     
     name = 'TestTorrentFinder'
     
-    def __init__(self):
+    def __init__(self, returnOnlyHD = False):
        PluginStub.__init__(self)
+       self.returnOnlyHD = returnOnlyHD
         
     def GetTorrentDefsForMovie(self, movie):
-        return [TorrentDefStub(True, movie), TorrentDefStub(False, movie)]
+        return [TorrentDefStub(True, movie), TorrentDefStub(self.returnOnlyHD, movie)]
 
 class LoopingTorrentFinderPlugin(TorrentFinderPluginStub):
     """A test TorrentFinderPlugin that will loop for ever when trying to find torrents."""
     
     def GetTorrentDefsForMovie(self, movie):
         while(True):
-            time.sleep(100)    
-        
+            time.sleep(100)
+
+class slowTorrentFinder(TorrentFinderPluginStub):
+    
+    def __init__(self, delay):
+        TorrentFinderPluginStub.__init__(self)
+        self.__delay = delay
+    
+    def GetTorrentDefsForMovie(self, movie):
+        time.sleep(self.__delay)
+        return [TorrentDefStub(True, movie), TorrentDefStub(False, movie)]
+    
 class TorrentDefStub(IMovieTorrentDef):
 
     seeders = 5          # Set in init

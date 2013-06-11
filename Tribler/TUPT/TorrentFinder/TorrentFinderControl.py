@@ -19,8 +19,9 @@ class TorrentFinderControl(Thread):
     __hdTorrentDefList = None
     __sdTorrentDefList = None
     __threads = None
+    __resultCallback = None
     
-    def __init__(self, pluginManager, movie):
+    def __init__(self, pluginManager, movie, resultCallback):
         Thread.__init__(self)
         self.__movie =  movie
         self.__hdTorrentDefList = SortedTorrentList()
@@ -29,6 +30,7 @@ class TorrentFinderControl(Thread):
         userDict = self.__LoadUserDict(pluginManager)
         self.__hdTorrentDefList.SetUserDict(userDict)
         self.__sdTorrentDefList.SetUserDict(userDict)
+        self.__resultCallback = resultCallback
     
     def FindTorrents(self):
         """Query plug-ins for a title using a Movie object. The results will be stored in the lists.
@@ -36,6 +38,7 @@ class TorrentFinderControl(Thread):
         plugins = self.__pluginManager.GetPluginDescriptorsForCategory('TorrentFinder')
         self.__threads = []
         for plugin_info in plugins:
+            print "DEBUG: Starting thread to find torrents with plugin:" + plugin_info.name
             thread = TorrentFinderControl.PluginThread(self, plugin_info, self.__movie)
             thread.start()
             self.__threads.append(thread)
@@ -44,10 +47,17 @@ class TorrentFinderControl(Thread):
             thread.join()
             
     def ProcessTorrentDefList(self, torrentDefList, trust):
+        #Keep the results so later on it can be determined if a callback needs to be done.
+        oldHDResult =  self.HasHDTorrent()
+        oldSDResult = self.HasSDTorrent()
+        #Add the torrents
         for item in torrentDefList:                
                 if not isinstance(item, IMovieTorrentDef):
                     raise IllegalTorrentResultException("TorrentFinder plugin should return results of IMovieTorrentDef.")
-                self.ProcessTorrentDef(item, trust)     
+                self.ProcessTorrentDef(item, trust)
+        #Check to see if a callback needs to be made. The callback needs to be made if a result changed.
+        if not oldHDResult == self.HasHDTorrent() or not oldSDResult == self.HasSDTorrent():
+                self.__resultCallback(self.__movie)
     
     def ProcessTorrentDef(self, definition, trust):
         """Inspect a returned torrent definition and place it in our list if appropriate
@@ -73,11 +83,11 @@ class TorrentFinderControl(Thread):
     
     def HasHDTorrent(self):
         """Return if a HD torrent was found."""
-        return len(self.__hdTorrentDefList.GetList())
+        return len(self.__hdTorrentDefList.GetList()) > 0
     
     def HasSDTorrent(self):
         """Return if a HD torrent was found."""
-        return len(self.__sdTorrentDefList.GetList())
+        return len(self.__sdTorrentDefList.GetList()) > 0
     
     def __LoadUserDict(self, pluginManager):
         """Loads quality terms from the user config file.

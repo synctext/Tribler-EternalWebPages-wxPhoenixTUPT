@@ -14,7 +14,7 @@ class TestMovieTorrentIterator(unittest.TestCase):
     
     def setUp(self):
         self.__movies = MovieTorrentIterator()
-        self.__torrentFinderControl = TorrentFinderControl(PluginManagerStub(), None)
+        self.__torrentFinderControl = TorrentFinderControl(PluginManagerStub(), None, None)
         self.__movie = MovieTorrent('Title', self.__torrentFinderControl)
         self.__hdTorrentDef = TorrentDefStub(True, Movie())
         self.__sdTorrentDef = TorrentDefStub(False, Movie())
@@ -83,7 +83,7 @@ class TestMovieTorrent(unittest.TestCase):
     '''Class to test MovieTorrent'''
     
     def setUp(self):        
-        self.__torrentFinder = TorrentFinderControl(PluginManagerStub(), None)   
+        self.__torrentFinder = TorrentFinderControl(PluginManagerStub(), None, None)   
         self.__movie =  MovieTorrent('NaN',self.__torrentFinder)     
     
     def test_HasHDTorrent_HasHDTorrents(self):

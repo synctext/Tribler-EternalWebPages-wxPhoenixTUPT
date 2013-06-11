@@ -8,7 +8,11 @@ from Tribler.TUPT.Parser.IParserPlugin import IParserPlugin
 import re
     
 class IMDbParserPlugin(IParserPlugin):    
-    '''Dictionary containing keys that can be parsed and a tuple. The tuple contains the corresponding moviedictionarykey and the corresponding parsefunction'''
+    """Dictionary containing keys that can be parsed and a tuple.
+    The tuple contains the corresponding moviedictionarykey and the corresponding parsefunction
+    
+    Depends on imdbpy, Movie, IParserplugin, re
+    """
 
     __items = {}
 
@@ -17,10 +21,12 @@ class IMDbParserPlugin(IParserPlugin):
                         'director' : ('director', IMDbParserPlugin.__ParseDirector), 'cast' : ('cast', IMDbParserPlugin.__ParseDirector)}
     
     def ParseWebSite(self, url, html):
-        '''Parse a IMDB website
+        """Parse a IMDB website
         Args:
             url (str): url to the webpage.
-            html(str): htmlsource for the webpage.'''
+            html(str): htmlsource for the webpage.
+        Returns a sequence of the parsed movies ([movie (Movie),])"""
+        
         #Split on ? and /.
         url = re.split('\?|/',url)
         if 'title' in url:
@@ -33,9 +39,10 @@ class IMDbParserPlugin(IParserPlugin):
         return []
 
     def __ParseMovie(self, html):
-        '''Parses IMDB websites looking for movies
+        """Parses IMDB websites looking for movies
         Args:
-            html (str): HTML source of the IMDB website.'''
+            html (str): HTML source of the IMDB website.
+        Returns a sequence of the parsed movies ([movie (Movie),])"""
         movieParser = DOMHTMLMovieParser()
         #Parse the website.   
         parseResult = movieParser.parse(html)['data']
@@ -43,6 +50,12 @@ class IMDbParserPlugin(IParserPlugin):
         return self.__ParseMovies([parseResult])
     
     def __ParseChart(self, html, chartParser):
+        """Parses IMDB chart webpage.
+        Args:
+            html (str): HTML source of the IMDB website.
+            chartParser (DOMParserBase) : Either the top or bottom dom parser that corresponds to the HTML source.
+        Returns a sequence of the parsed movies ([movie (Movie),])
+        """
         parseResults = chartParser.parse(html)['data']
         #Strip the first element of the parseResults.
         parseResults = [parseResult[1] for parseResult in parseResults]
@@ -50,19 +63,25 @@ class IMDbParserPlugin(IParserPlugin):
         return self.__ParseMovies(parseResults)
     
     def __ParseChartTop(self, html):
-        '''Parses IMDB chart webpage.
+        """Parses IMDB top chart webpage.
         Args:
-            html (str): HTML source of the IMDB website.'''
+            html (str): HTML source of the IMDB website.
+        Returns a sequence of the parsed movies ([movie (Movie),])"""
+            
         return self.__ParseChart(html, DOMHTMLTop250Parser())
     
     def __ParseChartBottom(self, html):
-        '''Parses IMDB chart webpage.
+        """Parses IMDB bottom chart webpage.
         Args:
-            html (str): HTML source of the IMDB website.'''
+            html (str): HTML source of the IMDB website.
+        Returns a sequence of the parsed movies ([movie (Movie),])"""
         return self.__ParseChart(html, DOMHTMLBottom100Parser())           
     
     def __ParseMovies(self, imdbpyMovies):
-        '''Converts the movies from imdbpy movies to our own Movie classes'''
+        """Converts the movies from imdbpy movies to our own Movie classes
+        Args:
+            imdbpyMovies ([imdbpyMovie,]) : sequence of the movies parsed in the imdbpy format
+        Returns a sequence of the parsed movies ([movie (Movie),])"""
         result = []
         for imdbMovie in imdbpyMovies:
             movie = Movie()
@@ -78,17 +97,17 @@ class IMDbParserPlugin(IParserPlugin):
         return result
 
     def GetParseableSites(self):
-        '''Returns a list of parsable urls'''
+        """Returns a list of parsable urls"""
         return ['www.imdb.com']
 
     @staticmethod
     def __ParseNothing(input):
-        ''' Call this function if no extra parsing is necessary'''
+        """ Call this function if no extra parsing is necessary"""
         return input
     
     @staticmethod
     def __ParseDirector(input):
-        '''Converts the format of director of the IMDb parser to our format.'''
+        """Converts the format of director of the IMDb parser to our format."""
         result =[]
         for person in input:
             result.append(person['name'])

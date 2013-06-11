@@ -21,9 +21,8 @@ class TorrentFinderControl(Thread):
     __threads = None
     __resultCallback = None
     
-    def __init__(self, pluginManager, movie, resultCallback):
+    def __init__(self, pluginManager, resultCallback):
         Thread.__init__(self)
-        self.__movie =  movie
         self.__hdTorrentDefList = SortedTorrentList()
         self.__sdTorrentDefList = SortedTorrentList()
         self.__pluginManager = pluginManager
@@ -39,7 +38,7 @@ class TorrentFinderControl(Thread):
         self.__threads = []
         for plugin_info in plugins:
             print "DEBUG: Starting thread to find torrents with plugin:" + plugin_info.name
-            thread = TorrentFinderControl.PluginThread(self, plugin_info, self.__movie)
+            thread = TorrentFinderControl.PluginThread(self, plugin_info)
             thread.start()
             self.__threads.append(thread)
         
@@ -47,6 +46,11 @@ class TorrentFinderControl(Thread):
             thread.join()
             
     def ProcessTorrentDefList(self, torrentDefList, trust):
+        """Process a list of torrentdefs.
+        Args:
+            torrentDeftList ([TorrentDef, ]) : list of the torrentDefs that need to be processed.
+            trust (float) : trust of the plugin that found the torrentDefs.
+        """
         #Keep the results so later on it can be determined if a callback needs to be done.
         oldHDResult =  self.HasHDTorrent()
         oldSDResult = self.HasSDTorrent()
@@ -57,10 +61,13 @@ class TorrentFinderControl(Thread):
                 self.ProcessTorrentDef(item, trust)
         #Check to see if a callback needs to be made. The callback needs to be made if a result changed.
         if not oldHDResult == self.HasHDTorrent() or not oldSDResult == self.HasSDTorrent():
-                self.__resultCallback(self.__movie)
+                self.__resultCallback()
     
     def ProcessTorrentDef(self, definition, trust):
-        """Inspect a returned torrent definition and place it in our list if appropriate
+        """Inspect a returned torrent definition and place it in our list if appropriate.
+        Args:
+            definition (TorrentDef) : torrentdef that needs to be processsed.
+            trust (float) : trust of the plugin that found the torrentDefs.        
         """
         if definition.IsHighDef():
             self.__hdTorrentDefList.Insert(definition, trust)
@@ -68,17 +75,22 @@ class TorrentFinderControl(Thread):
             self.__sdTorrentDefList.Insert(definition, trust)
 
     def GetTorrentList(self):
-        """Returns the list of found torrents (hdList, sdList)
+        """Returns the list of found torrents (hdList ([TorrentDef,]), sdList([TorrentDef,]))
         """
         return (self.__hdTorrentDefList.GetList(), self.__sdTorrentDefList.GetList())
     
     def GetHDTorrentList(self):
+        """Returns the list of found hd torrents ([TorrentDef,]).
+        """
         return self.__hdTorrentDefList.GetList()
     
     def GetSDTorrentList(self):
+        """Returns the list of found sd torrents ([TorrentDef,]).
+        """
         return self.__sdTorrentDefList.GetList()
     
     def HasTorrent(self):
+        """Returns if the TorrentFinder has a torrent."""
         return self.HasHDTorrent() or self.HasSDTorrent()
     
     def HasHDTorrent(self):
@@ -92,6 +104,8 @@ class TorrentFinderControl(Thread):
     def __LoadUserDict(self, pluginManager):
         """Loads quality terms from the user config file.
             If the file %APPDATA%/.Tribler/plug-ins
+        Args:
+            pluginManager (PluginManager) : pluginManager that loads all the plugins.
         """
         termFile = pluginManager.GetPluginFolder() + os.sep + 'settings.config'
         out = {}
@@ -111,7 +125,7 @@ class TorrentFinderControl(Thread):
         return out
     
     def run(self):
-        """Start finding threads"""
+        """Start finding torrents in a threaded way."""
         self.FindTorrents()
     
     class PluginThread(Thread):

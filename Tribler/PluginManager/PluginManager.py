@@ -31,7 +31,11 @@ class PluginManager:
         self.__categoryFolders = {}
         self.__categoryInterfaces = {}
     
-    def GetCategoryFolder(self, categoryName):    
+    def GetCategoryFolder(self, categoryName):
+        """Get the path to the CatergoryFolder based on the categoryName.
+        Args:
+            categoryName (str) : name of the category.
+        Returns path to folder (str)"""
         return self.__pluginsFolder + os.sep + categoryName
     
     def GetPluginFolder(self):
@@ -41,6 +45,8 @@ class PluginManager:
         """By default we store plug-ins in Triblers profile folder.
             If you want to overwrite this (for testing for example) use
             this method
+        Args:
+            folder (str) : path to the new pluginfolder.
         """
         self.__pluginsFolder = folder
     

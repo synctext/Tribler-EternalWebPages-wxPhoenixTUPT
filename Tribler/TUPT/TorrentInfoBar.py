@@ -5,7 +5,10 @@ import Tribler.TUPT.TUPTControl
 from Tribler.Main.vwxGUI.webbrowser import WebBrowser
         
 class TorrentInfoBar():
-    '''Class that willl create and show the found movies'''
+    '''Class that willl create and show the found movies
+    
+    Depends on: WX, TUPTControl, WebBrowser
+    '''
     
     HDCHOICE = "HD    Quality"
     SDCHOICE = "SD    Quality"
@@ -24,7 +27,8 @@ class TorrentInfoBar():
         self.__movieTorrentIterator = movieTorrentIterator
         self.Update()
     
-    def Update(self, movie = None):    
+    def Update(self):
+        """Update the state using the movieTorrentIterator."""    
         #Get all the movies with torrents
         validMovieIndices = []
         for i in range(self.__movieTorrentIterator.GetSize()):
@@ -47,7 +51,9 @@ class TorrentInfoBar():
         self.__webview.SetInfoBarContents((parseLabel,))
             
     def ShowMovieState(self, validMovieIndices):
-        """Show movie state"""
+        """Show movie state
+        Args:
+            validMovieIndices ([movieTorrentDef,]) : list of movies with torrents."""
          # movieLabel
         movieText = " <b>The following movie was found: </b>"
         if len(validMovieIndices) > 1:
@@ -117,6 +123,10 @@ class TorrentInfoBar():
         self.__RemoveComboBoxtem(self.SDCHOICE)
       
     def __RemoveComboBoxtem(self, item):
+        """Remove the item from the combobox
+        Args:
+            item (str) : item to be removed"""
+        
         #Find index of item.
         index =  self.__comboBox.FindString(item)
         #Remove item.
@@ -130,6 +140,7 @@ class TorrentInfoBar():
             self.__comboBox.SetSelection(0)
     
     def MovieSelectionUpdated(self, event):
+        """Update the selection of quality when the movie selection has changed"""
         #Get selected movie
         rawMovieSelection = self.__comboboxMovieTorrent.GetSelection()
         movieSelection = self.__comboboxMovieTorrentMap[rawMovieSelection]

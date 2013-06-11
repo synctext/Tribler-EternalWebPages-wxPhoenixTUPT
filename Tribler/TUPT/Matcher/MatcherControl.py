@@ -4,6 +4,8 @@ class MatcherControl:
     """MatcherControl:
         Try to complete/correct a movie definition delivered by some
         parser.
+        
+        Depends on: Movie
     """
     
     __termTable = None

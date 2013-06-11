@@ -8,6 +8,8 @@ from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
 from Tribler.TUPT.Movie import Movie
 
 class FenopyMovieTorrentDef(IMovieTorrentDef):
+    """TorrentFinder plugin that can find plugins on Fenopy."""
+    
 
     seeders = None          # Set in init
     leechers = None         # Set in init

@@ -27,7 +27,11 @@ from Tribler.TUPT.TorrentFinder.TorrentFinderControl import TorrentFinderControl
 
 
 class TUPTControl:
-    '''Class that controls the flow for parsing, matching and finding movies'''
+    '''Class that controls the flow for parsing, matching and finding movies
+    
+    Depends on Session, TorrentDef, LibraryManager, TorrentManager, 
+    PluginManager, TorrentInfoBar, MovieInserter, MatcherControl, ParserControl, TorrentFinderControl
+    '''
     
     __infoBar = None
     __torrentFinder = None
@@ -48,6 +52,10 @@ class TUPTControl:
         self.pluginmanager.LoadPlugins()
         
     def CoupleGUI(self, gui):
+        """Couple the gui with this TUPTControl
+        Args:
+            gui (Webbrowser) : the webbrowser that needs to be coupled.
+        """
         webview = gui.frame.webbrowser
         webview.AddLoadedListener(self)
         self.webview = webview
@@ -56,8 +64,10 @@ class TUPTControl:
     def webpageLoaded(self, event, html):
         """Callback for when a webpage was loaded
             We can now start feeding our parser controller.
+        Args:
+            event (wxEventType): navigation event.
+            html (str) : html source of the webpage that is loaded.
         """
-        print "DEBUG: TUPT started."
         #Parse the Website
         if self.parserControl.HasParser(event.GetURL()):
             movies, trust = self.parserControl.ParseWebsite(event.GetURL(), html)
@@ -73,17 +83,20 @@ class TUPTControl:
                     else:
                         movie = self.matcherControl.CorrectMovie(movie)
                     #Find torrents corresponding to the movie.
-                    self.__torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)
+                    self.__torrentFinder = TorrentFinderControl(self.pluginmanager, self.UpdateInforBar)
                     self.__torrentFinder.start()                    
                     movieTorrent = MovieTorrent(movie, self.__torrentFinder)                    
                     self.__movieTorrentIterator.append(movieTorrent)                    
     
-    def UpdateInforBar(self, movie):
-        print "DEBUG: Updating infobar."
-        self.__infoBar.Update(movie)
+    def UpdateInforBar(self):
+        """Update the infobar to the next state."""
+        self.__infoBar.Update()
     
     def DownloadHDMovie(self, n = 0):
-        """Start downloading the selected movie in HD quality"""
+        """Start downloading the selected movie in HD quality
+         Args:
+            optional:
+                n (int) = index of the torrent that will be played."""
         #Download the torrent.
         if self.__movieTorrentIterator.HasHDTorrent(n):
             self.__DownloadURL(self.__movieTorrentIterator.GetNextHDTorrent(n).GetTorrentURL(), 
@@ -94,7 +107,10 @@ class TUPTControl:
             self.__infoBar.RemoveSDQuality()
 
     def DownloadSDMovie(self, n = 0):
-        """Start downliading the selected movie in SD quality"""
+        """Start downliading the selected movie in SD quality
+        Args:
+            optional:
+                n (int) = index of the torrent that will be played."""
         #Check if a torrent exists.
         if self.__movieTorrentIterator.HasSDTorrent(n):
             self.__DownloadURL(self.__movieTorrentIterator.GetNextSDTorrent(n).GetTorrentURL(), 
@@ -106,6 +122,10 @@ class TUPTControl:
     
     def __DownloadURL(self, url, movie, isHD):
         """Download the URL using Tribler and start playing.
+        Args:
+            url (str) : url to the torrent.
+            movie (Movie) : movie that will be downloaded
+            isHD (bool) : bool representing if the movie is in HD quality
         """
         #Start downloading the torrent.
         torrentDef = None
@@ -133,10 +153,19 @@ class TUPTControl:
         libraryManager.PlayDownloadState(downloadState)      
         
     def __MagnetCallback(self, torrentdef):
+        """Callback when a torrent is added using a magnetlink.
+        Args:
+            torrentDef (TorrentDef) : torrent definition of the torrent added using the magnet link.
+        """
         self.__callbackTorrentdef = torrentdef
         self.__callbackTDEvent.set()    
  
     def __FindDownloadStateByInfoHash(self, infohash):
+        """Look for Downloadstate using the infohash
+        Args:
+            infohash : Find the download state 
+        Returns downloadState (DownloadState)"""
+            
         downloadStateList = LibraryManager.getInstance().dslist  
         for dls in downloadStateList:
             if dls.download.tdef.infohash == infohash:

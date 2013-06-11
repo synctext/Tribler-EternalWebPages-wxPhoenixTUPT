@@ -8,6 +8,8 @@ class MovieChannelControl(object):
         
         Every movie will go in its corresponding channel
         based on the release year.
+        
+        Depends on: GUIUtility
     """
     
     __channelManager = None
@@ -18,39 +20,63 @@ class MovieChannelControl(object):
             self.initAuto()
             
     def getInstance(*args, **kw):
+        """Get the Singleton instance of MovieChannelControl:
+           Args:
+               
+           Returns singleton instance of MovieChannelControl (MovieChannelControl)
+        """
         if MovieChannelControl.__single is None:
             MovieChannelControl(*args, **kw)
         return MovieChannelControl.__single
     getInstance = staticmethod(getInstance)
 
     def hasInstance():
+        """ Check if a instance exists
+        
+            Returns True if a MovieChannelControl exists (bool)
+        """
         return MovieChannelControl.__single != None
         hasInstance = staticmethod(hasInstance)
 
+    @staticmethod
     def delInstance():
+        """ Delete the singleton instance of MovieChannelControl"""
         MovieChannelControl.__single = None
-    delInstance = staticmethod(delInstance)
     
     def initAuto(self):
+        """Create a singleton instance of MovieChannelControl"""
         self.__channelManager = GUIUtility.getInstance().channelsearch_manager
         MovieChannelControl.__single = self
         
     def initWithChannelSearchManager(self, manager):
+        """Create a singleton instance and set the channelManager.
+        Args:
+            manager (ChannelManager): The channelmanager object to be used with this MovieChannelControl.
+        """
         self.__channelManager = manager
         MovieChannelControl.__single = self
     
     def GetChannelNameForYear(self, year):
-        """Return the pretty name for a channel of a certain year
+        """Get description for a channel of a certain year
+        Args:
+            year (int): The year of which the channel name needs to be retrieved.
+        Returns the channel name (str)
         """
         return "Movies of " + str(year)
     
     def GetChannelDescriptionForYear(self, year):
+        """Get the description for a channel of a certain year
+        Args:
+            year (int): The year of the channel that the description of needs to be retrieved.
+        Returns the channel description (str)
+        """
         return "Auto-generated TUPT channel for movies of the year " + str(year)
 
     def GetChannelIDForYear(self, year):
-        """Given a year, search for the channel id we want to put
-            our torrents in.
-            If needed, create our own channel
+        """Given a year, search for the channel id we want to put our torrents in. If needed, create our own channel
+        Args:
+             year (int): The year of which the channel id has to be retrieved.
+        Returns channelID (int)
         """
         #Search for the correct channel in dispersy
         channelName = self.GetChannelNameForYear(year)
@@ -73,6 +99,8 @@ class MovieChannelControl(object):
         
     def RemoveChannelByYear(self, year):
         """Given a year, remove our local database entry for it
+        Args:
+           year (int): The year of the channel that needs to be removed.
         """
         name = self.GetChannelNameForYear(year)
         desc = self.GetChannelDescriptionForYear(year)
@@ -80,17 +108,23 @@ class MovieChannelControl(object):
         
     def RemoveChannelById(self, channelId):
         """Given a channel id, remove our local database entry for it
+        Args:
+            id (int): The id of the channel that needs to be removed.
         """
         self.__channelManager.removeChannelById(channelId)
         
     def GetKnownTUPTChannels(self):
         """Return all TUPT channels we can find in our database
+        
+        Returns a sequence of all known TUPT channels ([channels])
         """
         emptyName = self.GetChannelNameForYear("")
         return self.__channelManager.findChannelsWithNameLike(emptyName)
         
     def GetKnownYears(self):
         """Return all TUPT channel years we can find in our database
+        
+        Returns a sequence of all years that have a known TUPT channels [year]
         """
         out = []
         emptyName = self.GetChannelNameForYear("")
@@ -101,6 +135,10 @@ class MovieChannelControl(object):
     
     def __GetMyChannel(self, name, description):
         """Get our own channel
+        Args:
+            name (str)        = Name of the channel.
+            description (str) = Description of the channel
+        Returns channelID (int)
         """
         hasChannel, hits = self.__channelManager.getAllMyChannels()
         for channel in hits:
@@ -109,10 +147,14 @@ class MovieChannelControl(object):
         return None
             
     def __CreateChannel(self, name, description):
-        """Create a channel with a certain name and return its id
+        """Create a channel with a certain name and return its id 
             Precondition for calling this method is that there exists no
             search results for channels with the name 'name', otherwise
             we will return the wrong channel id.
+        Args:
+            name (str)        : Name of the channel.
+            description (str) : Description of the channel
+        Returns channelID (int)    
         """
         self.__channelManager.createChannel(name, description)
         channelId = self.__GetMyChannel(name, description)
@@ -122,6 +164,10 @@ class MovieChannelControl(object):
     def __FilterChannels(self, channels, **requestedPropertyMap):
         """Filter channels by property and requested value.
             Check GUIDBTuples.Channel(Helper) for available properties.
+        Args:
+            channels [channels])     : list of channels that needs to be filtered.
+            **requestedPropertyMap   : map of properties that the channel needs to have.
+        Returns a filtered list ([channels])
         """
         out = []
         for channel in channels:
@@ -137,6 +183,10 @@ class MovieChannelControl(object):
     def __FindRightChannel(self, channels, year):
         """Tribler has found multiple channels that resemble the channel
             we want to insert our torrents in. Find the best match.
+        Args:
+            channels [channels]) : list of channels that needs to be filtered.: 
+            year (int)           : The year of the channel that needs to be found.
+        Returns channel with the best match (Channel)
         """
         channelName = self.GetChannelNameForYear(year)
         channelDescription = self.GetChannelDescriptionForYear(year)
@@ -162,10 +212,16 @@ class MovieChannelControl(object):
             return channelID
     
     def GetChannelObjectFromID(self, channelID):
+        """Return channel for the channel ID
+        Args:
+            id (int): id of the channel.
+        Returns channel corresponding to the ID."""
         return self.__channelManager.getChannel(channelID)
     
     def UpVoteChannel(self, channelID):
-        """Upvote a channel by favoriting it"""
+        """Upvote a channel by favoriting it
+         Args:
+            id (int): id of the channel to be upvoted"""
         self.__channelManager.favorite(channelID)
         
     def AddTorrentToChannel(self, channelID, torrentDef):
@@ -187,8 +243,17 @@ class MovieChannelControl(object):
         return self.__channelManager.getTorrentFromName(self.GetChannelObjectFromID(channelID), name)
 
     def RemoveTorrentFromChannel(self, channelID, torrentDef):
+        """Remove the torrent from the channel.
+        Args:
+            channelID (int) : the channelid of the channel that the torrent needs to be removed from.
+            torrentDef (Core.TorrentDef) : torrent that needs to be removed.
+        """
         self.__channelManager.removeTorrent(self.GetChannelObjectFromID(channelID), torrentDef.infohash)
         
     def RenameChannelTorrent(self, channelID, torrentDef, name):
-        """Rename a torrent in a channel and notify the channel community of the changes"""
+        """Rename a torrent in a channel and notify the channel community of the changes.
+         Args:
+            channelID (int) : the channel id of the channel that the torrent needs to be renamed in.
+            torrentDef (Core.TorrentDef) : torrent that needs to be renamed.
+            name (str) : Name the torrents needs to be renamed to."""
         self.__channelManager.modifyTorrentName(channelID, torrentDef, name)

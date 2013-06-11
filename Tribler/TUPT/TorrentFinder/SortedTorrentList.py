@@ -12,8 +12,7 @@ class SortedTorrentList:
         self.__userDict = {}
     
     def GetList(self):
-        """Return the ordered list of torrent definitions based on
-            quality rank
+        """Return the ordered list of torrent definitions based on quality rank.
         """
         out = []
         for tuple in self.__orderedList:
@@ -21,7 +20,10 @@ class SortedTorrentList:
         return out
     
     def Insert(self, torrentDef, trust):
-        """Insert a value into our ordered list of torrents
+        """Insert a value into our ordered list of torrents.
+        Args:
+            torrentDef (TorrentDef) : torrentdef to be added to the list.
+            trust (float) : trust in the plugin.
         """
         rank = self.__GetRank(torrentDef, trust)
         inserted = False
@@ -36,6 +38,8 @@ class SortedTorrentList:
     def SetUserDict(self, dict):
         """Set a dictionary of terms deemed to signify quality in a 
             torrent (Like your favorite torrent release group)
+        Args:
+            dict ({}) : dictionary containing favoring terms.
         """
         self.__userDict = dict
     
@@ -49,6 +53,9 @@ class SortedTorrentList:
         """For all of the values in 'dict' we perform fuzzy matching
             to 'string'. We return the amount of matches we think we
             have.
+        Args:
+            string (str) : potential term to favor matching if it is in the dictionary.
+            dict {} : dictionary containing the favored keys.
         """
         lstring = string.lower()
         matchers = dict.values()
@@ -61,7 +68,10 @@ class SortedTorrentList:
     
     def __GetRank(self, torrentDef, trust):
         """Use a heuristic for determining a certain score for a torrent
-            definition. 
+            definition.
+        Args:
+            torrentDef (TorrentDef) : torrentdef that needs to be ranked.
+            trust (float) : trust in the plugin. 
         """
         movieDict = torrentDef.GetMovieDescriptor().dictionary
         userDict = self.__GetUserDict()

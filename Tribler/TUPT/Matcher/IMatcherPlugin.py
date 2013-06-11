@@ -3,6 +3,8 @@ class IMatcherPlugin(object):
     def MatchMovie(self, movie):
         '''Receive a Movie class and find our closest
             matching movie.
+        Args:
+            movie (Movie): movie that needs to be matched.
         '''
         pass
     
@@ -18,5 +20,8 @@ class IMatcherPlugin(object):
             
             For example:
                 me.GetAttribute('title') == 'BBC Docu 5'
+        Args:
+            attribute (str) : key value of the attribute that needs to be retrieved.
+        Returns the value of the attribute.
         '''
         pass

@@ -6,6 +6,10 @@ from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 from MovieChannelControl import MovieChannelControl
 
 class MovieInserter(object):
+    """This class can insert movies into channels.
+    
+    Depends on: TorrentDef, GuiUtility, MovieChannelcontrol
+    """
     
     __channelController = None
     
@@ -19,6 +23,11 @@ class MovieInserter(object):
             Ex.
             "[HD] The Matrix (1999)" For high-definition version
             "The Matrix (1999)" For unkown/lower-definition version
+            
+            Args:
+                movie (Movie) : movie of which a nicer name needs to be made.
+                isHD (bool): boolean value of the movie isHD or not.
+        Returns the pretty name for the movie (str).
         """
         title = movie.dictionary['title']
         releaseYear = '(' + str(movie.dictionary['releaseYear']) + ')'
@@ -28,6 +37,10 @@ class MovieInserter(object):
     def AddTorrentToChannel(self, channelId, torrentDef, name):
         """Add a torrent to the local database and notify the Dispersy community
             #of the change.
+        Args:
+            channelID (int) : ID of the channel the torrent has to be inserted in.
+            torrentDef (Core.TorrentDef) : definition of the torrent that has to be inserted.
+            name (str) : name of the torrent.
         """
         self.__channelController.AddTorrentToChannel(channelId, torrentDef)
         self.__channelController.RenameChannelTorrent(channelId, torrentDef, name)
@@ -41,13 +54,17 @@ class MovieInserter(object):
         """We have found a different 'best' torrent than the channel.
             Try to find out which of the torrents is actually the best
             and update accordingly.
-            
+           
             For now, resolve by doing nothing 
         """
         pass
         
     def Insert(self, torrentDef, movie, isHD):
         """Put a movie in a channel given a certain torrentDef
+        Args:
+            torrentDef (Core.TorrentDef) : definition of the torrent that has to be inserted.
+            movie (Movie) : movie of which a torrent needs to be inserted.
+            isHD (bool): boolean value of the movie isHD or not.
         """
         #Get the pretty name for this torrent
         # Keeps the channel clean.
@@ -74,6 +91,10 @@ class MovieInserter(object):
                 self.ResolveTorrentConflict(channelId, torrentDef, duplicateInfoHash)
             
     def InsertThreaded(self, torrentDef, movie, isHD):
-        """Same as Insert(), but threaded
+        """Put a movie in a threaded way in a channel given a certain torrentDef
+        Args:
+            torrentDef (Core.TorrentDef) : definition of the torrent that has to be inserted.
+            movie (Movie) : movie of which a torrent needs to be inserted.
+            isHD (bool): boolean value of the movie isHD or not.
         """
         thread.start_new(self.Insert, (torrentDef, movie, isHD))

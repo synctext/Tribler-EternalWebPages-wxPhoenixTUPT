@@ -1,1 +1,193 @@
-This is a section about tests: TODO
+Our package comes with a set of python 'unittest' files.
+This section maps these unit-tests and explains how to run them.
+Some unit-tests cannot be run however due to the separation from
+the main Tribler project. There are two unit-tests for which this is an issue.
+As with the main project, all the tests are written for Python 2.7 .
+We also want to note that some unit-tests require an active internet connection.
+
+\subsection{Required packages}
+To run our tests we use Ubuntu machines.
+In \autoref{tab:packagestable} are the required 3rd party python packages and their Ubuntu package names
+required to run the unit-tests.
+
+\begin{table}[h]
+\caption{Required packages}
+\label{tab:packagestable}
+\begin{center}
+\begin{tabular}{ l l }
+	Name		& Ubuntu package \\
+	\hline
+	Yapsy		& python-yapsy	\\
+	wxPython	& python-wxgtk2.8 \\
+	IMDbPY		& python-imdbpy	\\
+	BeautifulSoup	& python-bs4
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Non-runnable tests}
+There are two unit-tests we cannot deliver runnable.
+Table \autoref{tab:unrunnabletests} lays out the tests and the rationale behind why they are not runnable.
+Note all of the paths in the file names are offset from the \textit{Tribler/Test/TUPT/} folder.
+These tests rely so heavily on core Tribler functionality, stubbing the Tribler classes would lead to
+unacceptable overlap of the stubs with the actual classes.
+
+\begin{table}[h]
+\caption{Non-runnable tests}
+\label{tab:unrunnabletests}
+\begin{center}
+\begin{tabular*}{\textwidth}{ l p{0.5\textwidth}}
+	File & Rationale \\
+	\hline
+	 test\_TUPTControl.py	& Requires a development build of wxPython (2.9.4.0) 
+											and relies heavily on core Tribler functionality.\\
+	Channels/test\_ChannelControl.py & Relies heavily on core Tribler functionality.
+\end{tabular*}
+\end{center}
+\end{table}
+
+\subsection{Runnable tests}
+The following tests in \autoref{tab:runnabletests} can be run normally (provided the 3rd party 
+packages were properly installed) from the terminal.
+The file names are offset from the \textit{Tribler/Test/} folder.
+
+\begin{table}[h]
+\caption{Runnable tests}
+\label{tab:runnabletests}
+\begin{center}
+\begin{tabular}{ l }
+    PluginManager/test\_PluginManager.py\\
+    TUPT/Parser/test\_ParserControl\\
+    TUPT/TorrentFinder/test\_SortedTorrentList\\
+    TUPT/Matcher/test\_MatcherControl\\
+    TUPT/Matcher/test\_TestTheMovieDBMatcherPlugin\\
+    TUPT/Parser/test\_IMDbParserPlugin\\
+    TUPT/TorrentFinder/test\_KatPhTorrentFinderPlugin\\
+    TUPT/TorrentFinder/test\_TorrentFinderControl\\
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Test output}
+This subsection contains the console output for all of our tests.
+The raw console output is shown for each of the tests in \autoref{tab:rantests}
+
+\begin{center}
+\begin{longtable}{| p{0.5\textwidth} | p{0.5\textwidth} |}
+\caption[Test output]{Test output}  \label{tab:rantests}\\
+
+\hline \multicolumn{1}{|p{0.5\textwidth}|}{\textbf{File}} & \multicolumn{1}{p{0.5\textwidth}|}{\textbf{Output}} \\ \hline \hline
+\endfirsthead
+
+\multicolumn{2}{l}{\bfseries \tablename\ \thetable{} -- continued from previous page}\\
+\hline \multicolumn{1}{|p{0.5\textwidth}|}{\textbf{File}} & \multicolumn{1}{p{0.5\textwidth}|}{\textbf{Output}} \\ \hline \hline
+\endhead
+
+\hline
+\endfoot
+
+\hline \hline
+\endlastfoot
+
+    TUPT/test\_TUPTControl & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 13 tests in 0.002s
+
+OK
+\end{verbatim}\\ \hline
+    TUPT/Channels/test\_ChannelControl  & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 5 tests in 0.002s
+
+OK
+\end{verbatim}\\ \hline
+    PluginManager/test\_PluginManager & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 3 tests in 0.031s
+
+OK
+\end{verbatim}\\ \hline
+    TUPT/Parser/test\_ParserControl & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 6 tests in 0.001s
+
+OK
+\end{verbatim}\\ \hline
+    \small{TUPT/TorrentFinder/test\_SortedTorrentList} & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 6 tests in 0.004s
+
+OK
+\end{verbatim}\\ \hline
+    TUPT/Matcher/test\_MatcherControl & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 2 tests in 2.541s
+
+OK
+\end{verbatim}\\ \hline
+    \small{TUPT/Matcher/} \\ {test\_TestTheMovieDBMatcherPlugin} & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 3 tests in 2.274s
+
+OK
+\end{verbatim}\\ \hline
+    TUPT/Parser/test\_IMDbParserPlugin & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 7 tests in 4.631s
+
+OK
+\end{verbatim}\\ \hline
+    \small{TUPT/TorrentFinder/} \\ {test\_KatPhTorrentFinderPlugin} & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 3 tests in 0.970s
+
+OK
+\end{verbatim}\\ \hline
+    \small{TUPT/TorrentFinder/} \\ {test\_TorrentFinderControl} & 
+\begin{verbatim}
+Finding files... done.
+Importing test modules ... done.
+
+---------------------------------
+Ran 10 tests in 0.007s
+
+OK
+\end{verbatim}\\
+\end{longtable}
+\end{center}

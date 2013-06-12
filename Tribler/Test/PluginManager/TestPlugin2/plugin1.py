@@ -1,4 +1,4 @@
-from plugintypes import TestPluginInterface1
+from Tribler.Test.PluginManager.plugintypes import TestPluginInterface1
 
 class TestPlugin(TestPluginInterface1):
     

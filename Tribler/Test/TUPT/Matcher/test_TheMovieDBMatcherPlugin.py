@@ -8,8 +8,11 @@ from Tribler.TUPT.Movie import Movie
 class TestTheMovieDBMatcherPlugin(unittest.TestCase):
     '''Test class to test TheMovieDBMatcherPlugin'''
     
+    def thisFolder(self):
+        return os.path.dirname(__file__)
+    
     def __GetPath(self):
-        return os.path.realpath(os.getcwd()  + os.sep + '..' + os.sep + '..' + os.sep + 'TUPT')
+        return os.path.realpath(self.thisFolder()  + os.sep + '..' + os.sep + '..' + os.sep + '..' + os.sep + 'TUPT')
     
     def setUp(self):
         #Arrange

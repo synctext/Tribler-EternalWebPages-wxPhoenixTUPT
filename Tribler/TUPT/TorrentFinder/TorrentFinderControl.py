@@ -21,8 +21,9 @@ class TorrentFinderControl(Thread):
     __threads = None
     __resultCallback = None
     
-    def __init__(self, pluginManager, resultCallback):
+    def __init__(self, pluginManager, movie, resultCallback):
         Thread.__init__(self)
+        self.__movie =  movie 
         self.__hdTorrentDefList = SortedTorrentList()
         self.__sdTorrentDefList = SortedTorrentList()
         self.__pluginManager = pluginManager
@@ -37,8 +38,7 @@ class TorrentFinderControl(Thread):
         plugins = self.__pluginManager.GetPluginDescriptorsForCategory('TorrentFinder')
         self.__threads = []
         for plugin_info in plugins:
-            print "DEBUG: Starting thread to find torrents with plugin:" + plugin_info.name
-            thread = TorrentFinderControl.PluginThread(self, plugin_info)
+            thread = TorrentFinderControl.PluginThread(self, plugin_info, self.__movie)
             thread.start()
             self.__threads.append(thread)
         
@@ -61,7 +61,7 @@ class TorrentFinderControl(Thread):
                 self.ProcessTorrentDef(item, trust)
         #Check to see if a callback needs to be made. The callback needs to be made if a result changed.
         if not oldHDResult == self.HasHDTorrent() or not oldSDResult == self.HasSDTorrent():
-                self.__resultCallback()
+                self.__resultCallback(self.__movie)
     
     def ProcessTorrentDef(self, definition, trust):
         """Inspect a returned torrent definition and place it in our list if appropriate.
@@ -161,7 +161,6 @@ class TorrentFinderControl(Thread):
                 list = self.plugin.GetTorrentDefsForMovie(self.movie)
             except Exception:
                 print "Unexpected error in plugin "+ self.name +".\n", sys.exc_info()
-            print "Plugin " + self.name + " returned " + str(len(list)) + " results."
             self.parent.ProcessTorrentDefList(list, self.trust)             
 
 class IllegalTorrentResultException(Exception):

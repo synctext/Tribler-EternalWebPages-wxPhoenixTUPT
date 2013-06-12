@@ -101,7 +101,7 @@ class TheMovieDBMatcherPlugin(IMatcherPlugin):
         return self.result.keys()
 
     def GetAttribute(self, attribute):
-          '''Returns the value of a certain movie attribute
+        '''Returns the value of a certain movie attribute
             returned by GetMovieAttributes()
             
             For example:
@@ -109,4 +109,5 @@ class TheMovieDBMatcherPlugin(IMatcherPlugin):
         Args:
             attribute (str) : key value of the attribute that needs to be retrieved.
         Returns the value of the attribute.
+        '''
         return self.result[attribute]

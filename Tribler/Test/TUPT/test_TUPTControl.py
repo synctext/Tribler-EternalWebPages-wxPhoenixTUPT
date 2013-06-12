@@ -6,7 +6,7 @@ from Tribler.TUPT.TorrentFinder.TorrentFinderControl import TorrentFinderControl
 
 from Tribler.TUPT.Movie import Movie
 
-from Tribler.Test.TUPT.test_StubPluginManager import PluginManagerStub
+from Tribler.Test.TUPT.TUPTStubs import PluginManagerStub
 from Tribler.Test.TUPT.TorrentFinder.TorrentFinderStubs import TorrentDefStub
   
 

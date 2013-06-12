@@ -1,11 +1,7 @@
-\documentclass[tikz]{standalone}
 \usepackage{tikz-uml}
 \usepackage[T1]{fontenc}
 
-\newcommand{\pckgsep}{/ } 
-
-\begin{document}
-
+\newcommand{\tikzimgGeneralTUPT}{
 %%%%%%%%%%%%%
 %% GENERAL TUPT OVERVIEW
 %%%%%%%%%%%%%
@@ -52,7 +48,69 @@
 \end{umlpackage}
 
 \end{tikzpicture}
+}
 
+\newcommand{\tikzimgSpecificTUPT}{
+%%%%%%%%%%%%%
+%% SPECIFIC TUPT OVERVIEW
+%%%%%%%%%%%%%
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+\begin{umlpackage}[x=0, y=0]{TUPT}
+	%%Class definitions
+	\umlclass[x=1, y=9]{Movie}{
+		+ dictionary : dict
+	}{}
+	\umlclass[x=7, y=5]{TUPTControl}{}{
+		+ CoupleGUI(gui)\\
+		+ webpageLoaded(event, html)\\
+		+ UpdateInforBar()\\
+		+ DownloadHDMovie(n)\\
+		+ DownloadSDMovie(n)
+	}
+
+	\umlclass[x=1, y=5]{MovieTorrentIterator}{}{
+		+ append(movieTorrent)\\
+		+ GetSize()\\
+		+ HasHDTorrent(n)\\
+		+ HasSDTorrent(n)\\
+		+ HasTorrent(n)\\
+		+ GetMovie(n)\\
+		+ GetNextHDTorrent(n)\\
+		+ GetNextSDTorrent(n)
+	}
+
+	\umlclass[x=1, y=0]{MovieTorrent}{}{
+		+ HasHDTorrent()\\
+		+ HasSDTorrent()\\
+		+ HasTorrent()\\
+		+ GetNextHDTorrent()\\
+		+ GetNextSDTorrent() 
+	}
+
+	\umlclass[x=7, y=0]{TorrentInfoBar}{}{
+		+ Update()\\
+		+ ShowParsingState()\\
+		+ ShowMovieState(validMovieIndices)\\
+		+ playButtonPressed(event)\\
+		+ RemoveHDQuality()\\
+		+ RemoveSDQuality()\\
+		+ MovieSelectionUpdated(event)
+	}
+
+	%%Associations
+	\umluniassoc[mult1=1,mult2=1]{TUPTControl}{MovieTorrentIterator} 
+	\umlcompo[mult1=1,mult2=*]{MovieTorrentIterator}{MovieTorrent}
+	\umlaggreg[mult1=1,mult2=*]{MovieTorrentIterator}{Movie} 
+	\umlcompo[mult1=1,mult2=1]{TUPTControl}{TorrentInfoBar}
+
+\end{umlpackage}
+
+\end{tikzpicture}
+}
+
+\newcommand{\tikzimgChannels}{
 %%%%%%%%%%%%%
 %% CHANNELS OVERVIEW
 %%%%%%%%%%%%%
@@ -94,7 +152,9 @@
 \end{umlpackage}
 
 \end{tikzpicture}
+}
 
+\newcommand{\tikzimgMatcher}{
 %%%%%%%%%%%%%
 %% MATCHER OVERVIEW
 %%%%%%%%%%%%%
@@ -125,7 +185,9 @@
 \end{umlpackage}
 
 \end{tikzpicture}
+}
 
+\newcommand{\tikzimgParser}{
 %%%%%%%%%%%%%
 %% PARSER OVERVIEW
 %%%%%%%%%%%%%
@@ -166,7 +228,9 @@
 \end{umlpackage}
 
 \end{tikzpicture}
+}
 
+\newcommand{\tikzimgTorrentFinder}{
 %%%%%%%%%%%%%
 %% TORRENT FINDER OVERVIEW
 %%%%%%%%%%%%%
@@ -244,5 +308,4 @@
 \end{umlpackage}
 
 \end{tikzpicture}
-
-\end{document}
+}

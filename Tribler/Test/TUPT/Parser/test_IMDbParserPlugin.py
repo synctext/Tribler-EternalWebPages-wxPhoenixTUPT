@@ -10,6 +10,9 @@ class TestIMDbParserPlugin(unittest.TestCase):
     
     __result = {'title' : 'The Matrix', 'releaseYear' : 1999, 'director' : ['Andy Wachowski', 'Lana Wachowski']}
 
+    def thisFolder(self):
+        return os.path.dirname(__file__)
+
     def download_webpage(self, url, filename):
         """Download a webpage pointed to by 'url' to the file 'filename' using
             the Mozilla 5.0 header.
@@ -70,7 +73,7 @@ class TestIMDbParserPlugin(unittest.TestCase):
         #Act
         pluginmanager = PluginManager()
         #Overwrite the path to the sourcefolder of the plugin.        
-        path = os.path.realpath(os.getcwd() + os.sep + '..' + os.sep + '..' + os.sep + 'TUPT')
+        path = os.path.realpath(self.thisFolder()  + os.sep + '..' + os.sep + '..' + os.sep + '..' + os.sep + 'TUPT')
         pluginmanager.OverwritePluginsFolder(path)
         #Load the plugin
         pluginmanager.RegisterCategory("Parser", IParserPlugin)

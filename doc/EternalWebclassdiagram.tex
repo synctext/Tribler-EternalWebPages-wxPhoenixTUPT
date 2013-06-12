@@ -1,0 +1,71 @@
+\documentclass[tikz]{standalone}
+\usepackage{tikz-uml}
+\usepackage[T1]{fontenc}
+
+\newcommand{\pckgsep}{/ } 
+
+\begin{document}
+
+%%%%%%%%%%%%%
+%% GENERAL TUPT OVERVIEW
+%%%%%%%%%%%%%
+\tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
+\begin{tikzpicture}
+
+%%
+%% ResourceSeeder -> WebPageTorrentHeader
+%% ResourceSniffer -> ResourceSeeder
+%% ResourceSniffer -> WebPage
+%%
+
+\begin{umlpackage}[x=0, y=0]{Tribler}
+
+	\begin{umlpackage}[x=0, y=0]{SiteRipper}
+		%%Class definitions
+		\umlclass[x=3, y=6.5]{ResourceSniffer}{}{
+			+ GetFile(uri)\\
+			+ StartLoading(url)\\
+			+ GetWebPage()\\
+			+ Seed()
+		}
+
+		\umlclass[x=0, y=3]{ResourceSeeder}{}{
+			+ \umlstatic{SeedWebpage(tarfile, webpage, accessdate)}
+		}
+
+		\umlclass[x=7, y=0.2]{WebPage}{}{
+			+ DownloadContent()\\
+			+ AddResource(uri)\\
+			+ GetContent()\\
+			+ SetContent(content)\\
+			+ GetUrl()\\
+			+ SetUrl(url)\\
+			+ CreateFromFile(tarFileName)\\
+			+ RemoveTempFiles(tarFileName)\\
+			+ \umlstatic{GetFileName(url)}\\
+			+ \umlstatic{GetResourceFileName(url)}\\
+			+ \umlstatic{GetURLName(filename)}\\
+			+ \umlstatic{GetTarName(url)}\\
+			+ \umlstatic{GetTarFilepath(url)}\\
+			+ CreateTar()\\
+			+ MapResource(url)
+		}
+
+		\umlclass[x=0, y=0]{WebPageTorrentHeader}{}{
+			+ CreateTorrentDef(session)\\
+			+ GetSeededFile()\\
+			+ GetFileFolder()
+		}
+
+		%%Associations
+		\umlaggreg[mult1=1,mult2=1,pos2=0.7]{ResourceSniffer}{WebPage} 
+		\umluniassoc{ResourceSniffer}{ResourceSeeder}
+		\umluniassoc{ResourceSeeder}{WebPageTorrentHeader}
+	\end{umlpackage}
+
+\end{umlpackage}
+
+\end{tikzpicture}
+
+
+\end{document}

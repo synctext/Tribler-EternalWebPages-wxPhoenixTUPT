@@ -2,8 +2,6 @@ import os
 
 from yapsy.PluginManager import PluginManager as yPluginManager
 
-from Tribler.Core.Session import Session 
-
 class PluginManager:
     """Manager for user plug-ins.
         Plug-ins are to be placed in the folder:
@@ -22,10 +20,9 @@ class PluginManager:
     __categoryFolders = None        #Dictionary of categoryname -> categoryfolder  
     __categoryInterfaces = None     #Dictionary of categoryname -> IPlugin interface
     
-    def __init__(self):
+    def __init__(self, profileFolder = os.getcwd()):
         self.__yapsyManager = yPluginManager()
-        
-        profileFolder = Session.get_default_state_dir()
+            
         self.__pluginsFolder = profileFolder + os.sep + 'plug-ins'
         
         self.__categoryFolders = {}

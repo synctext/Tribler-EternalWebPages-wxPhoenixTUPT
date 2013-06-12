@@ -39,7 +39,7 @@ class TUPTControl:
     __callbackTDEvent = Event()
     __callbackTorrentdef = None
     
-    def __init__(self, pluginManager = PluginManager()):
+    def __init__(self, pluginManager):
         self.pluginmanager = pluginManager
         self.parserControl = ParserControl(pluginManager)
         self.matcherControl = MatcherControl(pluginManager)

@@ -449,7 +449,9 @@ class ABCApp():
         s.start()
         
         progress('Loading TUPT plug-ins')
-        self.tuptcontroller = TUPTControl()
+        profileFolder = Session.get_default_state_dir()
+        pluginManager = PluginManager(profileFolder)
+        self.tuptcontroller = TUPTControl(pluginManager)
 
         def define_communities():
             from Tribler.community.search.community import SearchCommunity

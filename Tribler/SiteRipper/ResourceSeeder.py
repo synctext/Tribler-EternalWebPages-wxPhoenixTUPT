@@ -13,6 +13,8 @@ class WebPageTorrentHeader:
     """WebPageTorrentHeader
         Class for creating TorrentDef object specifically for
         eternal webpages.
+        
+        Depends on: TorrentDef, WebpageInjector, Session, OS, urllib2, datetime
     """
     
     __name = ""             # The name of our torrent (ex. http://www.google.com/index.html)
@@ -22,6 +24,10 @@ class WebPageTorrentHeader:
     def __init__(self, file, webpageurl, accessdate = None):
         """Initialze our object for a certain (tar) file and a hosted url.
             Optionally supply an accessdate string (defaults to today). 
+        Args:
+            file (File) : tarfile that will be seeded.
+            webpageurl (str) : url to the webpage.
+            accesdate (datetime) : time when the page was captured. 
         """
         self.__name = webpageurl
         self.__file = file
@@ -34,6 +40,9 @@ class WebPageTorrentHeader:
     def CreateTorrentDef(self, session):
         """Create the torrent definition (TorrentDef) for our current
             Tribler session.
+        Args:
+            session (Tribler.Session) : current Tribler session.
+        returns torrentdef (TorrentDef)
         """
         torrentdef = TorrentDef()
         #Add functional requirements to torrent definition
@@ -60,6 +69,10 @@ def SeedWebpage(tarfile, webpage, accessdate = None):
         Supply the path to the tarfile and the webpage URL.
         Optionally supply an accessdate if you do not want to use
         today as the website retrieval date.
+    Args:
+        tarfile (File) : tarfile of the webpage.
+        webpage (WebPage) : webpage that will be seeded.
+        accesdate (datetime) : datetime when the page was captured. 
     """
     session = Session.get_instance()
     header = WebPageTorrentHeader(tarfile, webpage, accessdate)

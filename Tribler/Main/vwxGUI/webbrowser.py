@@ -125,15 +125,23 @@ class WebBrowser(XRCPanel):
         self.LoadURL("about:blank")
     
     def goBackward(self, event):
+        """Go to the previous loaded page.
+        Args:
+            event : mouseclick event."""
         self.__browsing_history = True
         self.LoadURL(self.__history.getPrevious())
         
     def goForward(self, event):
+        """Go to the next loaded page.
+        Args:
+            event : mouseclick event."""
         self.__browsing_history = True
         self.LoadURL(self.__history.getNext())
     
     def __StartLoading(self, url):
-        """Fire all notifications that we are loading a webpage
+        """Fire all notifications that we are loading a webpage.
+        Args:
+            url (str) : url of the to be loaded webpage.
         """
         #Set loading flag
         self.__loading = True
@@ -145,6 +153,8 @@ class WebBrowser(XRCPanel):
     
     def __LoadURLNotFound(self, url):
         """Load our pagenotfound.html and give it the HTML URL parameter of the page we tried to reach
+        Args:
+            url (str) : url that was not found.
         """
         import Tribler.SiteRipper
         self.__safepage = True
@@ -157,6 +167,8 @@ class WebBrowser(XRCPanel):
     
     def __LoadURLFromLocal(self, url):
         """Load a URL from the swarm cache.
+        Args:
+            url (str) : url of the to be loaded webpage.
         """
         expectedFile = WebPage.GetTarFilepath(url)
         if os.path.isfile(expectedFile):
@@ -168,6 +180,8 @@ class WebBrowser(XRCPanel):
     
     def __LoadURLFromInternet(self, url):
         """Load a URL 'normally' from the internet
+        Args:
+            url (str) : url of the to be loaded webpage.
         """
         #Signal loading
         self.__StartLoading(self.__normalizeAddress(url))
@@ -176,6 +190,8 @@ class WebBrowser(XRCPanel):
     def LoadURL(self, url):
         """Load a URL, automaticly delegates call to appropriate url handler
             depending on our viewmode.
+        Args:
+            url (str) : url of the to be loaded webpage.
         """
         #If we try to load a page while we are loading a page, we crash
         #So we wait until the current page has finished loading and try again
@@ -191,12 +207,16 @@ class WebBrowser(XRCPanel):
             self.__LoadURLFromInternet(url)
 
     def loadURLFromAdressBar(self, event):
-        """Load an URL from the adressbar"""
+        """Load an URL from the adressbar
+        Args:
+            event : gui event."""
         url = self.adressBar.GetValue()
         self.LoadURL(url)
       
     def loadTorrentFile(self, tarFileName):
-        """Load a webpage from a webpage Torrent created by the seed button"""
+        """Load a webpage from a webpage Torrent created by the seed button
+        Args:
+            tarFileName (str): name of the tarfile to be loaded."""
         webPage = WebPage()
         webPage.CreateFromFile(tarFileName)
         #Signal that we are responsibly redirecting pages
@@ -215,7 +235,9 @@ class WebBrowser(XRCPanel):
         self.webview.SetPage(source, url)
 
     def onURLLoading(self, event):
-        """Actions to be taken when an URL start to be loaded."""
+        """Actions to be taken when an URL start to be loaded.
+        Args:
+            event (WebViewEvent) : event of loading webview."""
         #Intervene if a 3rd party is trying to pull us from the page
         if self.__loading and urlparse.urlparse(event.GetURL()).netloc != self.__loading_netloc:
             event.Veto()
@@ -227,7 +249,9 @@ class WebBrowser(XRCPanel):
             return
     
     def onURLLoaded(self, event):
-        """Actions to be taken when an URL is loaded."""
+        """Actions to be taken when an URL is loaded.
+        Args:
+            event (WebViewEvent) : event of loading webview."""
         #We loaded an embedded webpage, don't do anything special
         if urlparse.urlparse(event.GetURL()).netloc != self.__loading_netloc:
             return
@@ -259,6 +283,8 @@ class WebBrowser(XRCPanel):
                 - WebViewModes['UNKNOWN'] or 'UNKNOWN'
                 - WebViewModes['INTERNET'] or 'INTERNET'
                 - WebViewModes['SWARM_CACHE'] or 'SWARM_CACHE'
+        Args:
+            webviewmode (WebViewModes) : mode currently running.
         """
         if isinstance(mode, basestring):
             #We are supplied with a string, get the integer accordingly
@@ -303,6 +329,8 @@ class WebBrowser(XRCPanel):
     def __handleWebpageViewmodeSwitch(self, url):
         """Callback for a webpage's request to switch to internet mode
             Prompts the user if switching to the internet is O.K.
+        Args:
+            url (str) : url to be loaded.
         """
         answer = wx.ID_YES
         if not self.__safepage:
@@ -318,7 +346,9 @@ class WebBrowser(XRCPanel):
         return False
         
     def seed(self, event):
-        """Start seeding the images on the website"""
+        """Start seeding the images on the website
+        Args:
+            event : mouseclick event"""
         self.__seedButton.SetLabel("Seeding")
         #disable seed button
         self.__seedButton.Disable()
@@ -330,6 +360,8 @@ class WebBrowser(XRCPanel):
     def __normalizeAddress(self, url):
         """Check wether we have a valid http scheme in our url and
             try to retrieve the universal address from the DNS.
+        Args:
+            url (str) : url to be normalized.
         """
         redirurl = self.__assertHttp(url)   # Make sure we are following an http protocol
         try:
@@ -339,7 +371,9 @@ class WebBrowser(XRCPanel):
         return redirurl
         
     def __assertHttp(self, url):
-        """Prefix the http scheme to our url if we forgot it 
+        """Prefix the http scheme to our url if we forgot it
+        Args:
+            url (str) : url to be asserted.
         """
         parts = urlparse.urlparse(url)
         if parts.scheme == '':
@@ -349,6 +383,7 @@ class WebBrowser(XRCPanel):
     def __otherviewmode(self):
         """Get the viewmode we are NOT using.
             Ex. if we are in Internet mode return Swarm mode, and vice versa 
+        return viewmode not used (WebViewMode)
         """
         return WebBrowser.WebViewModes['INTERNET'] if self.__viewmode == WebBrowser.WebViewModes['SWARM_CACHE'] else WebBrowser.WebViewModes['SWARM_CACHE']
         
@@ -374,12 +409,16 @@ class ViewmodeResourceHandler(wx.html2.WebViewHandler):
     def __GetFileInternet(self, uri):
         """Retrieve a resource from the internet and let our sniffer sniff
             the uri's.
+        Returns resource (File)
         """
         self.__sniffer.GetFile(uri)             #Deliver to sniffer
         return self.__httphandler.GetFile(uri)  #Actual internet resource
     
     def __GetFileLocal(self, uri):
         """Retrieve a resource from our local filesystem
+        Args:
+            uri (str) : uri to be loaded.
+        Returns resource (File)
         """
         webPage = self.__sniffer.GetWebPage()
         filename = webPage.MapResource(uri)
@@ -389,6 +428,9 @@ class ViewmodeResourceHandler(wx.html2.WebViewHandler):
     
     def GetFile(self, uri):
         """Returns the wxFile descriptor for the WebView to retrieve the resource
+        Args:
+            uri (str) : uri to be loaded.
+        Returns resource (File)
         """
         if self.__viewmode == WebBrowser.WebViewModes['INTERNET']:
             return self.__GetFileInternet(uri)
@@ -438,6 +480,8 @@ class WebviewHistory():
         """Call this if we visit a new url
             We then add it to our history and pop any old history
             if our list gets too big.
+        Args:
+            url (str) : visited url.
         """
         #If we are viewing history, remove forward history
         if self.__finger != len(self.__history)-1:

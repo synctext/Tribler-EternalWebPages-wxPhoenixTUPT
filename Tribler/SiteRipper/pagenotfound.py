@@ -34,6 +34,7 @@ class NotFoundFile:
     def getFilenameCreate():
         """Get the location of pagenotfound.html
             Create it if it does not exist
+            returns filename (str)
         """
         NotFoundFile.assertFile()
         return NotFoundFile.getFilename()
@@ -41,6 +42,7 @@ class NotFoundFile:
     @staticmethod
     def getFilename():
         """Get the location of pagenotfound.html
+            return path to pagenotfound.html (str)
         """
         return Session.get_default_state_dir() + "pagenotfound.html"
     

@@ -37,6 +37,10 @@ class WebPage:
         webPage.close()
         
     def AddResource(self, uri):
+        """Add resource to the resourcedictionary
+        Args:
+            uri (str) : uri link to a resource.
+        """
         self.__resourceDictionary.append(uri)
     
     def GetContent(self):
@@ -46,6 +50,8 @@ class WebPage:
     
     def SetContent(self, content):
         """Set new web page content to our memory
+        Args:
+            content (str) : content to be set of this webpage.
         """
         self.__content = content
 
@@ -58,13 +64,17 @@ class WebPage:
         """Sets the URL we are pointing to
             Note that this member does not download the actual page
             Nothing is set if url == ''.
+        Args:
+            url (str) : url to the webpage.
         """
         if url:
             self.__url = url
             self.__folderName = self.GetFileName(url) + os.sep
     
     def CreateFromFile(self, tarFileName):
-        """Create a web page from disk"""
+        """Create a web page from disk
+        Args:
+            tarFileName (str) : filename of the to be created tarFileName."""
         folderPath = WebPage.__GetDownloadsPath(tarFileName)
         tempPath = folderPath + os.sep + 'Temp' + os.sep + tarFileName + os.sep
         #Create tar folder
@@ -82,6 +92,8 @@ class WebPage:
         
     def RemoveTempFiles(self, tarFileName):
         """Remove unpacked temp files used for page viewing
+        Args:
+            tarFileName (str) : name of to be removed tar file name.
         """
         folderPath = WebPage.__GetDownloadsPath(tarFileName)
         tempPath = folderPath + os.sep + 'Temp' + os.sep + tarFileName + os.sep
@@ -133,10 +145,12 @@ class WebPage:
     
     @staticmethod
     def GetTarName(url):
+        """Return the tar filename of the tar (str)"""
         return WebPage.GetFileName(url) + '.tar.gz'
     
     @staticmethod
     def GetTarFilepath(url):
+        """Return the path to the tar file (str)"""
         return WebPage.__GetDownloadsPath(url) + os.sep + WebPage.GetTarName(url)
     
     def CreateTar(self):
@@ -198,12 +212,16 @@ class WebPage:
     
     @staticmethod
     def __AssertFolder(folderpath):
-        """Assert that the folder exists. If it does not, then the folder is created"""
+        """Assert that the folder exists. If it does not, then the folder is created
+        Args:
+            folderpath (str) : path to the folder that needs to be asserted to exists."""
         if not os.path.exists(folderpath):
             os.makedirs(folderpath)
     
     def __RemoveTarSourceFiles(self, folderpath):
         """Remove all the files we packed earlier
+        Args:
+            folderpath (str) : path to the folder to be removed.
         """
         if not os.path.exists(folderpath):
             return

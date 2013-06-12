@@ -16,6 +16,8 @@ class ResourceSniffer:
 
     def __AddResourceToWebPage(self, uri):
         """Add a mapping for a resource uri
+        Args:
+            uri (str) : uri link to a resource of this webpage.
         """
         self.__webPage.AddResource(uri)
 
@@ -24,6 +26,8 @@ class ResourceSniffer:
             Note that we may not be sensitive to these requests
             (This is to avoid javascript chucking images at us while
             we are compressing a page and breaking us)
+        Args:
+            uri (str) : uri link to a resource of this webpage.
         """
     	if self.__listenforfiles:
             self.__AddResourceToWebPage(uri)
@@ -32,11 +36,14 @@ class ResourceSniffer:
         """Callback for when a page starts to get loaded
             (Resources meant to be sniffed are going to pour into
             our GetFile() member)
+        Args:
+            url (str) : url to the webpage.
         """
         self.__webPage = WebPage(url)
         self.__listenforfiles = True  
         
     def GetWebPage(self):
+        """Returns the webpage of the resourcesniffer."""
         return self.__webPage
     	
     def Seed(self):

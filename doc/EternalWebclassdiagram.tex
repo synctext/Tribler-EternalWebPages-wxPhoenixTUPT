@@ -1,22 +1,12 @@
-\documentclass[tikz]{standalone}
 \usepackage{tikz-uml}
 \usepackage[T1]{fontenc}
 
-\newcommand{\pckgsep}{/ } 
-
-\begin{document}
-
+\newcommand{\tikzimgEternalWebpages}{
 %%%%%%%%%%%%%
-%% GENERAL TUPT OVERVIEW
+%% ETERNAL WEBPAGE OVERVIEW
 %%%%%%%%%%%%%
 \tikzumlset{fill class=white, fill template=white, fill package=white,fill note=white} 
 \begin{tikzpicture}
-
-%%
-%% ResourceSeeder -> WebPageTorrentHeader
-%% ResourceSniffer -> ResourceSeeder
-%% ResourceSniffer -> WebPage
-%%
 
 \begin{umlpackage}[x=0, y=0]{Tribler}
 
@@ -66,6 +56,4 @@
 \end{umlpackage}
 
 \end{tikzpicture}
-
-
-\end{document}
+}

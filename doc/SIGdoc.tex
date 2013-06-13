@@ -13,6 +13,18 @@
    \maketitle
 
 \section{Introduction}
+Our projects consists of two seperate extensions of Tribler. Both use wxWebview to browse the internet.
+The first extension is the Eternal Webpage extension.
+This extension will allow a user to easily browse the web using peer-to-peer-swarms and also add new pages to the swarm.
+The second extension is the TUPT extension.
+This extension allows you to browse websites and if a movie is detected on the website,
+then you can begin streaming this movie with one click of a button.
+
+The only common part between the two extensions is the WebBrowser class.
+After we finished the Eternal Webpages extension, we started working on the TUPT extension.
+We transformed the WebBrowser class and stripped all functionality specific for the EternalWebpages extension that was no longer needed.
+All needed functionality for the TUPT extension to the WebBrowser class has been added in a generic way.
+This generic approach was much harder for the WebBrowser, because we changed the way WebBrowser loaded pages.
 
 \section{Eternal Webpages diagrams}
 \input{siteripperdiagrams}

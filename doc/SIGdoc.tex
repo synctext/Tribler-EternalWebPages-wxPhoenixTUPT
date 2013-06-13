@@ -27,6 +27,11 @@ We transformed the WebBrowser class and stripped all functionality specific for 
 All needed functionality for the TUPT extension to the WebBrowser class has been added in a generic way.
 This generic approach was much harder for the WebBrowser, because we changed the way how WebBrowser loads pages.
 
+The projects use Python 2.7 and are compiled as part of the Tribler project (see \url{https://github.com/Tribler/tribler}).
+Because we cannot/should not deliver code that is not our own we have ripped out our code
+from the main Tribler code. The result of this move is that the project is uncompilable and 
+some of the tests unrunnable. This should not really be of any hindrance to evaluating the code though.
+
 \section{Eternal Webpages diagrams}
 \input{siteripperdiagrams}
 

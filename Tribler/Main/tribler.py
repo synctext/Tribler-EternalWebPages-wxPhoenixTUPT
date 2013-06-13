@@ -97,6 +97,7 @@ from Tribler.Utilities.Instance2Instance import *
 from Tribler.Utilities.LinuxSingleInstanceChecker import *
 
 from Tribler.TUPT.TUPTControl import TUPTControl
+from Tribler.PluginManager.PluginManager import PluginManager
 
 from Tribler.Core.API import *
 from Tribler.Core.simpledefs import NTFY_MODIFIED

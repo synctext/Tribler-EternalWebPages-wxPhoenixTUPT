@@ -159,7 +159,7 @@ class WebBrowser(XRCPanel):
         self.infobaroverlay.SetForegroundColour(self.infobaroverlay.COLOR_FOREGROUND)
     
     def SetInfoBarContents(self, *orderedContents):
-        wx.CallAfter(self.__SetInfoBarContents, orderedContents)
+        wx.CallAfter(self.__SetInfoBarContents, *orderedContents)
     
     def __SetInfoBarContents(self, *orderedContents):
         """Add content to the infobar in left -> right ordering

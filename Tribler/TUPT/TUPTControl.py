@@ -34,7 +34,6 @@ class TUPTControl:
     '''
     
     __infoBar = None
-    __torrentFinder = None
     __movieTorrentIterator = None
     __callbackTDEvent = Event()
     __callbackTorrentdef = None
@@ -83,9 +82,9 @@ class TUPTControl:
                     else:
                         movie = self.matcherControl.CorrectMovie(movie)
                     #Find torrents corresponding to the movie.
-                    self.__torrentFinder = TorrentFinderControl(self.pluginmanager, self.UpdateInforBar)
-                    self.__torrentFinder.start()                    
-                    movieTorrent = MovieTorrent(movie, self.__torrentFinder)                    
+                    torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)
+                    torrentFinder.start()                    
+                    movieTorrent = MovieTorrent(movie, torrentFinder)                    
                     self.__movieTorrentIterator.append(movieTorrent)                    
     
     def UpdateInforBar(self):

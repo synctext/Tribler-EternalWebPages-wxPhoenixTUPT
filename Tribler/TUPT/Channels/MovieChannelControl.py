@@ -211,6 +211,29 @@ class MovieChannelControl(object):
                     channelID = channel.id
             return channelID
     
+    def MergeChannelInto(myChannel, channelID):
+        """Add all torrents in one of the users channels (myChannel) to another
+            channel (channelID)
+            
+        Args:
+            myChannel (int): id of the users channel.    
+            channelID (int): id of the channel to be merged into.
+        """
+        torrents = self.__channelManager.getTorrentsFromChannel(myChannel)
+        if torrents:
+            for torrent in torrents:
+                torrentDef = torrent.ds.get_download().get_def()
+                infohash = torrent.infohash
+                otherTorrent = self.ChannelGetTorrentFromName(channelID, torrent.name)
+                if not otherTorrent:
+                    #Other channel does not have our torrent
+                    #or anything like it, insert it
+                    self.AddTorrentToChannel(channelID, torrentDef)
+                elif otherTorrent.infohash != infohash:
+                    #Other channel already has a torrent like ours
+                    #Pick the best one to insert
+                    self.ResolveTorrentConflict(channelID, torrentDef, otherTorrent.infohash)
+    
     def GetChannelObjectFromID(self, channelID):
         """Return channel for the channel ID
         Args:
@@ -265,3 +288,30 @@ class MovieChannelControl(object):
             torrentDef (Core.TorrentDef) : torrent that needs to be renamed.
             name (str) : Name the torrents needs to be renamed to."""
         self.__channelManager.modifyTorrentName(channelID, torrentDef, name)
+        
+    def ResolveTorrentConflict(self, channelId, torrentDef, otherInfoHash):
+        """We have found a different 'best' torrent than the channel.
+            Try to find out which of the torrents is actually the best
+            and update accordingly.
+           
+            We base ourselves on the amount of seeds to determine the 
+            support for a torrent.
+            
+        Args:
+            channelID (int) : ID of the channel the torrent may be inserted in.
+            torrentDef (Core.TorrentDef) : definition of the torrent that wants to be inserted.
+            otherInfoHash (Core.TorrentDef.infohash) : infohash of the conflicting torrent already available.
+        """
+        gui = GUIUtility.getInstance()
+        mngr = gui.torrentsearch_manager.torrent_db
+        
+        ourSeeds = mngr.getTorrent(torrentDef.infohash)
+        theirSeeds = mngr.getTorrent(otherInfoHash)
+        
+        if ourSeeds > theirSeeds:
+            #Our torrent has more support than the
+            #torrent already on the channel.
+            #Move our torrent into the channel.
+            #Note that both the Remove and Add calls are networked through dispersy correctly
+            self.RemoveTorrentFromChannelByInfoHash(otherInfoHash)
+            self.AddTorrentToChannel(channelId, torrentDef)

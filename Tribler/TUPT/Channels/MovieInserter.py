@@ -50,33 +50,6 @@ class MovieInserter(object):
         mngr = gui.frame.librarylist.GetManager()
         mngr.refresh()
         
-    def ResolveTorrentConflict(self, channelId, torrentDef, otherInfoHash):
-        """We have found a different 'best' torrent than the channel.
-            Try to find out which of the torrents is actually the best
-            and update accordingly.
-           
-            We base ourselves on the amount of seeds to determine the 
-            support for a torrent.
-            
-        Args:
-            channelID (int) : ID of the channel the torrent may be inserted in.
-            torrentDef (Core.TorrentDef) : definition of the torrent that wants to be inserted.
-            otherInfoHash (Core.TorrentDef.infohash) : infohash of the conflicting torrent already available.
-        """
-        gui = GUIUtility.getInstance()
-        mngr = gui.torrentsearch_manager.torrent_db
-        
-        ourSeeds = mngr.getTorrent(torrentDef.infohash)
-        theirSeeds = mngr.getTorrent(otherInfoHash)
-        
-        if ourSeeds > theirSeeds:
-            #Our torrent has more support than the
-            #torrent already on the channel.
-            #Move our torrent into the channel.
-            #Note that both the Remove and Add calls are networked through dispersy correctly
-            self.__channelController.RemoveTorrentFromChannelByInfoHash(otherInfoHash)
-            self.__channelController.AddTorrentToChannel(channelId, torrentDef)
-        
     def Insert(self, torrentDef, movie, isHD):
         """Put a movie in a channel given a certain torrentDef
         Args:
@@ -95,9 +68,17 @@ class MovieInserter(object):
         #Whether or not we add our torrent to this channel,
         #it was determined to be the right channel. So upvote it.
         self.__channelController.UpVoteChannel(channelId)
-        
-        if not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
-            duplicateInfoHash = self.__channelController.ChannelGetTorrentFromName(channelId, name)
+
+        #If we have our own version of this channel and it is not
+        #the best channel, merge our channel into the other channel.
+        myChannel = self.__GetMyChannel(self.__channelController.GetChannelNameForYear(year), 
+                                        self.__channelController.GetChannelDescriptionForYear(year))
+        if myChannel and myChannel != channelId:
+            #Merge our entire channel into the other channel
+            self.__channelController.MergeChannelInto(myChannel, channelId)
+        elif not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
+            #Merge the single torrent into the other channel
+            duplicateInfoHash = self.__channelController.ChannelGetTorrentFromName(channelId, name).infohash
             if not duplicateInfoHash:
                 #If the torrent is not already in the channel
                 #Add it to the local database and notify the Dispersy community
@@ -106,7 +87,7 @@ class MovieInserter(object):
             else:
                 #There is already a definition of our torrent in this channel.
                 #Try to find out which one is the best.
-                self.ResolveTorrentConflict(channelId, torrentDef, duplicateInfoHash)
+                self.__channelController.ResolveTorrentConflict(channelId, torrentDef, duplicateInfoHash)
             
     def InsertThreaded(self, torrentDef, movie, isHD):
         """Put a movie in a threaded way in a channel given a certain torrentDef

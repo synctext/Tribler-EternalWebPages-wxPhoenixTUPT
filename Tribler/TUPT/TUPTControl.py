@@ -74,6 +74,7 @@ class TUPTControl:
             if movies is not None:
                 self.__movieTorrentIterator = MovieTorrentIterator()
                 self.__infoBar = TorrentInfoBar(self.webview, self, self.__movieTorrentIterator)
+                threads = []
                 for movie in movies:     
                     #Correct movie information
                     if trust == 1:
@@ -83,9 +84,14 @@ class TUPTControl:
                         movie = self.matcherControl.CorrectMovie(movie)
                     #Find torrents corresponding to the movie.
                     torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)
+                    threads.append(torrentFinder)
                     torrentFinder.start()                    
                     movieTorrent = MovieTorrent(movie, torrentFinder)                    
-                    self.__movieTorrentIterator.append(movieTorrent)                    
+                    self.__movieTorrentIterator.append(movieTorrent)
+                #Wait for all threads to finish.
+                for thread in threads:
+                    thread.join()
+                self.__infoBar.CheckForResults()                    
     
     def UpdateInforBar(self):
         """Update the infobar to the next state."""
@@ -193,6 +199,10 @@ class MovieTorrentIterator:
     
     def HasTorrent(self, n):
         return self.__movies[n].HasTorrent()
+    
+    def HasMovie(self):
+        """Returns True if the movietorrentIterator has a movie."""
+        return len(self.__movies) > 0
     
     def GetMovie(self,n):
         return self.__movies[n]

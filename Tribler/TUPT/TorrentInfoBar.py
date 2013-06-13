@@ -30,17 +30,38 @@ class TorrentInfoBar():
     def Update(self):
         """Update the state using the movieTorrentIterator."""    
         #Get all the movies with torrents
+        validMovieIndices = self.__GetValidMovieIndices()
+        #Set movie infobar information
+        if self.__movieTorrentIterator.HasMovie():
+            if len(validMovieIndices)>0:               
+               self.ShowMovieState(validMovieIndices)
+            else:
+                self.ShowParsingState()
+        else:          
+            self.ShowNoResultFoundState()
+            
+        self.__webview.ShowInfoBar()
+    
+    def CheckForResults(self):
+        """Check a final time if there are results """
+        pass
+    
+    def __GetValidMovieIndices(self):
+        """Get all movies that have a valid torrent
+        Returns list of valid movies ([MovieTorrent,])"""
         validMovieIndices = []
         for i in range(self.__movieTorrentIterator.GetSize()):
             if self.__movieTorrentIterator.GetMovie(i).HasTorrent():
                 validMovieIndices.append(i)
-        #Set movie infobar information
-        if len(validMovieIndices)>0:               
-           self.ShowMovieState(validMovieIndices)
-        else:
-            self.ShowParsingState()
-            
-        self.__webview.ShowInfoBar()   
+        return validMovieIndices
+    
+    def ShowNoResultFoundState(self):
+        """Show no results found state."""
+        # Create parseLabel
+        noResultFoundText = " <b>No results found </b>"
+        noResultFoundLabel = wx.StaticText(self.__webview.infobaroverlay)
+        noResultFoundLabel.SetLabelMarkup(noResultFoundText)
+        self.__webview.SetInfoBarContents((noResultFoundLabel,))    
     
     def ShowParsingState(self):
         """Show parsing state."""

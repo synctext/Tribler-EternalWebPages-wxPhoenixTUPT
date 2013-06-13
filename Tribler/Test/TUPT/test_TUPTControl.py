@@ -59,6 +59,20 @@ class TestMovieTorrentIterator(unittest.TestCase):
         #Assert
         self.assertFalse(result)
         
+    def test_HasMovie_HasNoMovie(self):
+        #Act        
+        result = self.__movies.HasMovie()
+        #Assert
+        self.assertFalse(result)
+    
+    def test_HasMovie_HasMovie(self):
+        #Arrange
+        self.__movies.append(self.__movie)
+        #Act        
+        result = self.__movies.HasMovie()
+        #Assert
+        self.assertTrue(result)    
+        
     def test_GetNextHDTorrent(self):
          #Arrange
         self.__torrentFinderControl.ProcessTorrentDef(self.__hdTorrentDef, 0.5)

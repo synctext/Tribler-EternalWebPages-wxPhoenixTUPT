@@ -55,9 +55,27 @@ class MovieInserter(object):
             Try to find out which of the torrents is actually the best
             and update accordingly.
            
-            For now, resolve by doing nothing 
+            We base ourselves on the amount of seeds to determine the 
+            support for a torrent.
+            
+        Args:
+            channelID (int) : ID of the channel the torrent may be inserted in.
+            torrentDef (Core.TorrentDef) : definition of the torrent that wants to be inserted.
+            otherInfoHash (Core.TorrentDef.infohash) : infohash of the conflicting torrent already available.
         """
-        pass
+        gui = GUIUtility.getInstance()
+        mngr = gui.torrentsearch_manager.torrent_db
+        
+        ourSeeds = mngr.getTorrent(torrentDef.infohash)
+        theirSeeds = mngr.getTorrent(otherInfoHash)
+        
+        if ourSeeds > theirSeeds:
+            #Our torrent has more support than the
+            #torrent already on the channel.
+            #Move our torrent into the channel.
+            #Note that both the Remove and Add calls are networked through dispersy correctly
+            self.__channelController.RemoveTorrentFromChannelByInfoHash(otherInfoHash)
+            self.__channelController.AddTorrentToChannel(channelId, torrentDef)
         
     def Insert(self, torrentDef, movie, isHD):
         """Put a movie in a channel given a certain torrentDef

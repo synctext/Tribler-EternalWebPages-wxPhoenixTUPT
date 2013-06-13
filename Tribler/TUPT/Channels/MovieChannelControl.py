@@ -249,6 +249,14 @@ class MovieChannelControl(object):
             torrentDef (Core.TorrentDef) : torrent that needs to be removed.
         """
         self.__channelManager.removeTorrent(self.GetChannelObjectFromID(channelID), torrentDef.infohash)
+    
+    def RemoveTorrentFromChannelByInfoHash(self, channelID, infohash):
+        """Remove the torrent from the channel.
+        Args:
+            channelID (int) : the channelid of the channel that the torrent needs to be removed from.
+            infohash (Core.TorrentDef.infohash) : infohash of torrent that needs to be removed.
+        """
+        self.__channelManager.removeTorrent(self.GetChannelObjectFromID(channelID), infohash)
         
     def RenameChannelTorrent(self, channelID, torrentDef, name):
         """Rename a torrent in a channel and notify the channel community of the changes.

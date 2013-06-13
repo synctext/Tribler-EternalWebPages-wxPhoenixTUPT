@@ -7,10 +7,16 @@ import thread
 import sys
 import traceback
 
+from threading import Event
+
 from Tribler.Main.vwxGUI.list import XRCPanel
+from Tribler.Core.Libtorrent.LibtorrentMgr import LibtorrentMgr
 
 class WebBrowser(XRCPanel):
     '''WebView is a class that allows you to browse the worldwideweb.'''    
+ 
+    __allowBrowsing = None
+    __dhtFound = 0
  
     def __init__(self, parent=None):
         XRCPanel.__init__(self, parent)
@@ -86,7 +92,36 @@ class WebBrowser(XRCPanel):
 
         self.HideInfoBar()
         
-        wx.CallAfter(self.webview.SetMinSize,(2000, -1))   #Fix initial expansion, 2.9.4.0 bug    
+        wx.CallAfter(self.webview.SetMinSize,(2000, -1))   #Fix initial expansion, 2.9.4.0 bug
+        
+        #Fix libtorrent bug with sockets
+        self.__allowBrowsing = Event()
+        self.__dhtFound = 0
+        thread.start_new(self.MonitorLibtorrentMgr,())    
+    
+    def MonitorLibtorrentMgr(self):
+        """When a socket is opened by the webview it interferes with
+            the LibtorrentMgr class. This causes LibtorrentMgr to lock
+            up Tribler entirely. Therefore we wait until it has initialized
+            (dh_nodes > 10) before we allow browsing.
+        """
+        mngr = LibtorrentMgr.getInstance()
+        while (True):
+            self.__dhtFound = mngr.get_dht_nodes()
+            if ( self.__dhtFound > 10 ):
+                self.__allowBrowsing.set()
+                break
+    
+    def ShowLibtorrentWorkingError(self):
+        """If the user has to wait for libtorrent to start up,
+            notify the user via the infobar.
+        """
+        completion = (float(self.__dhtFound)/11.0)*100.0
+        errorText = " <b>Cannot browse to page, waiting for Libtorrent to set up (%.2f%%)... Try again later</b>" % completion
+        errorLabel = wx.StaticText(self.infobaroverlay)
+        errorLabel.SetLabelMarkup(errorText)
+        self.SetInfoBarContents((errorLabel,))
+        self.ShowInfoBar()
     
     def goBackward(self, event):
         if self.webview.CanGoBack():
@@ -97,7 +132,12 @@ class WebBrowser(XRCPanel):
             self.webview.GoForward()
     
     def loadURLFromAdressBar(self, event):
-        '''Load an URL from the adressbar'''
+        '''Wait for the flag to be set to allow us to browse
+            to websites (see MonitorLibtorrentMgr())and then
+            Load an URL from the adressbar'''
+        if not self.__allowBrowsing.wait(0.5):
+            self.ShowLibtorrentWorkingError()
+            return
         url = self.adressBar.GetValue()
         if not urlparse.urlparse(url).scheme:
             url = 'http://' + url

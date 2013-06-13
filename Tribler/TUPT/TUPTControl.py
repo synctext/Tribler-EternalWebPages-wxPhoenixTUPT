@@ -34,7 +34,6 @@ class TUPTControl:
     '''
     
     __infoBar = None
-    __torrentFinder = None
     __movieTorrentIterator = None
     __callbackTDEvent = Event()
     __callbackTorrentdef = None
@@ -75,6 +74,7 @@ class TUPTControl:
             if movies is not None:
                 self.__movieTorrentIterator = MovieTorrentIterator()
                 self.__infoBar = TorrentInfoBar(self.webview, self, self.__movieTorrentIterator)
+                threads = []
                 for movie in movies:     
                     #Correct movie information
                     if trust == 1:
@@ -83,10 +83,15 @@ class TUPTControl:
                     else:
                         movie = self.matcherControl.CorrectMovie(movie)
                     #Find torrents corresponding to the movie.
-                    self.__torrentFinder = TorrentFinderControl(self.pluginmanager, self.UpdateInforBar)
-                    self.__torrentFinder.start()                    
-                    movieTorrent = MovieTorrent(movie, self.__torrentFinder)                    
-                    self.__movieTorrentIterator.append(movieTorrent)                    
+                    torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)
+                    threads.append(torrentFinder)
+                    torrentFinder.start()                    
+                    movieTorrent = MovieTorrent(movie, torrentFinder)                    
+                    self.__movieTorrentIterator.append(movieTorrent)
+                #Wait for all threads to finish.
+                for thread in threads:
+                    thread.join()
+                self.__infoBar.CheckForResults()                    
     
     def UpdateInforBar(self):
         """Update the infobar to the next state."""
@@ -194,6 +199,10 @@ class MovieTorrentIterator:
     
     def HasTorrent(self, n):
         return self.__movies[n].HasTorrent()
+    
+    def HasMovie(self):
+        """Returns True if the movietorrentIterator has a movie."""
+        return len(self.__movies) > 0
     
     def GetMovie(self,n):
         return self.__movies[n]

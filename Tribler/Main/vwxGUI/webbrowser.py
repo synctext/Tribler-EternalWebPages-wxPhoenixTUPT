@@ -161,7 +161,7 @@ class WebBrowser(XRCPanel):
     def SetInfoBarContents(self, *orderedContents):
         wx.CallAfter(self.__SetInfoBarContents, orderedContents)
     
-    def SetInfoBarContents(self, *orderedContents):
+    def __SetInfoBarContents(self, *orderedContents):
         """Add content to the infobar in left -> right ordering
             Expects a list of tuples of a wxObject and a set of wxFlags
             For example:

@@ -22,6 +22,12 @@ files[${#files[*]}]="$HOME/.Tribler/plug-ins/Matcher/"
 files[${#files[*]}]="Matcher/TheMovieDBMatcherPlugin.yapsy-plugin"
 files[${#files[*]}]="$HOME/.Tribler/plug-ins/Matcher/"
 
+files[${#files[*]}]="Matcher/IMDbMatcherPlugin.py"
+files[${#files[*]}]="$HOME/.Tribler/plug-ins/Matcher/"
+
+files[${#files[*]}]="Matcher/IMDbMatcherPlugin.yapsy-plugin"
+files[${#files[*]}]="$HOME/.Tribler/plug-ins/Matcher/"
+
 files[${#files[*]}]="Parser/IMDbParserPlugin.py"
 files[${#files[*]}]="$HOME/.Tribler/plug-ins/Parser/"
 

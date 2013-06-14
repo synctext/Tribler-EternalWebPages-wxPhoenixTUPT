@@ -17,6 +17,7 @@ class WebBrowser(XRCPanel):
  
     __allowBrowsing = None
     __dhtFound = 0
+    __evtUserChangedText = None
  
     def __init__(self, parent=None):
         XRCPanel.__init__(self, parent)
@@ -90,6 +91,11 @@ class WebBrowser(XRCPanel):
         self.infobaroverlay.Bind(wx.EVT_ENTER_WINDOW, self.OnInfoBarMouseOver, self.infobaroverlay)
         self.infobaroverlay.Bind(wx.EVT_LEAVE_WINDOW, self.OnInfoBarMouseOut, self.infobaroverlay)
 
+        '''Register typing event to prevent hindering the user while typing in a new address'''
+        self.adressBar.Bind(wx.EVT_TEXT, self.UserChangeText, self.adressBar)
+        self.__evtUserChangedText = Event()
+
+        '''Do final GUI calls'''
         self.HideInfoBar()
         
         wx.CallAfter(self.webview.SetMinSize,(2000, -1))   #Fix initial expansion, 2.9.4.0 bug
@@ -175,14 +181,24 @@ class WebBrowser(XRCPanel):
         #Only take action when navigating to a new page. This event is also thrown for loading resources.
         if self.currentURL != mainUrl:
             self.currentURL = mainUrl
+            #Reset the event for the user changing the address bar text
+            self.__evtUserChangedText.clear()
+            #Update the GUI (hide the infobar)
             self.HideInfoBar()
+            #Notify our listeners we are navigating to a new page
             navigatingNewPageEvent = WebBrowser.NavigatingNewPageEvent(mainUrl)
             thread.start_new(self.__notifyLoadedListeners, (navigatingNewPageEvent,))
     
+    def UserChangeText(self, event):
+        '''Callback for when a user changed the text in the url-bar'''
+        self.__evtUserChangedText.set()
+    
     def onURLLoaded(self, event):
         '''Actions to be taken when an URL is loaded.'''
-        #Update the adressbar
-        self.adressBar.SetValue(self.webview.GetCurrentURL())
+        if not self.__evtUserChangedText.isSet():
+            #Update the adressbar to the 'real' website address
+            #If the user isn't entering new data
+            self.adressBar.SetValue(self.webview.GetCurrentURL())
     
     def OnInfoBarMouseOver(self, event):
         """When we roll over the InfoBar, set our background to be brighter

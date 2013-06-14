@@ -465,6 +465,9 @@ class SettingsDialog(wx.Dialog):
         """Callback for when the user presses the reload button.
             Calls the registered PluginManager to reload its plugins
             and then updates the GUI. 
+            
+        Args:
+            event (wx.EVT_BUTTON) : the button press event
         """
         self.guiUtility.app.tuptcontroller.pluginmanager.LoadPlugins()
         self.LoadTUPTPlugins()
@@ -476,6 +479,9 @@ class SettingsDialog(wx.Dialog):
             counterpart (if it exists).
             If referencing a folder, just remove the entire folder
             (with everything in it).
+            
+        Args:
+            filespath (str) : the file(path) pointed to by a Yapsy config file
         """
         if os.path.isfile(filespath + ".py"):
             #Module is a single file
@@ -492,6 +498,9 @@ class SettingsDialog(wx.Dialog):
     def __RemoveByPluginInfo(self, pluginInfo):
         """Given a yapsy PluginInfo object, remove all
             corresponding auxiliary files.
+            
+        Args:
+            pluginInfo (yapsy.PluginInfo) : Yapsy plugin info to search and remove by
         """
         from yapsy.PluginFileLocator import PluginFileLocator
         folder = self.guiUtility.app.tuptcontroller.pluginmanager.GetPluginFolder()
@@ -518,6 +527,9 @@ class SettingsDialog(wx.Dialog):
         """Callback for when the user presses the delete plug-in button.
             Retrieve the selected value from the list and remove all
             plug-in (auxiliary) files.
+            
+        Args:
+            event (wx.EVT_BUTTON) : the button press event
         """
         selected = self.elements['allPluginsList'].GetSelection()
         plugin_info = self.elements['allPluginsList'].GetClientData(selected)

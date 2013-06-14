@@ -13,6 +13,7 @@ from Tribler.Main.globals import DefaultDownloadStartupConfig
 from Tribler.PluginManager.PluginManager import PluginManager
 
 from Tribler.TUPT.TorrentInfoBar import TorrentInfoBar
+from Tribler.TUPT.ViewmodeSwitcher import ViewmodeSwitcher
 
 from Tribler.TUPT.Channels.MovieInserter import MovieInserter
 
@@ -59,6 +60,7 @@ class TUPTControl:
         webview.AddLoadedListener(self)
         self.webview = webview
         self.mainFrame = gui.frame
+        self.viewmodeSwitcher = ViewmodeSwitcher(gui)
         
     def webpageLoaded(self, event, html):
         """Callback for when a webpage was loaded

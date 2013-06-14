@@ -113,7 +113,14 @@ class WebBrowser(XRCPanel):
         """
         mngr = LibtorrentMgr.getInstance()
         while (True):
-            self.__dhtFound = mngr.get_dht_nodes()
+            try:
+                self.__dhtFound = mngr.get_dht_nodes()
+            except:
+                #We are called after initialization of the LibtorrentMgr
+                #It can only mean one thing if we cannot retrieve them:
+                # the user has closed Tribler, which means we need to 
+                # exit our loop.
+                break
             if ( self.__dhtFound > 10 ):
                 self.__allowBrowsing.set()
                 break

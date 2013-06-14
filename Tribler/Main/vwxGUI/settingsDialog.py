@@ -9,6 +9,7 @@ import os
 import cStringIO
 import tempfile
 import atexit
+import shutil
 
 
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
@@ -53,7 +54,10 @@ class SettingsDialog(wx.Dialog):
                              't4t0', 't4t0choice', 't4t1', 't4t2', 't4t2text', 't4t3',
                              'g2g0', 'g2g0choice', 'g2g1', 'g2g2', 'g2g2text', 'g2g3',
                              'use_webui',
-                             'webui_port']
+                             'webui_port',
+                             'allPluginsList',
+                             'reloadTUPTPlugins',
+                             'deleteTUPTPlugins']
 
         self.myname = None
         self.elements = {}
@@ -96,6 +100,7 @@ class SettingsDialog(wx.Dialog):
         self.tree.AppendItem(root, 'Limits', data=wx.TreeItemData(xrc.XRCCTRL(self, "bandwidth_panel")))
         self.tree.AppendItem(root, 'Seeding', data=wx.TreeItemData(xrc.XRCCTRL(self, "seeding_panel")))
         self.tree.AppendItem(root, 'Experimental', data=wx.TreeItemData(xrc.XRCCTRL(self, "exp_panel")))
+        self.tree.AppendItem(root, 'TUPT Settings', data=wx.TreeItemData(xrc.XRCCTRL(self, "tupt_panel")))
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelectionChanging)
 
         # Bind event listeners
@@ -114,6 +119,9 @@ class SettingsDialog(wx.Dialog):
 
         self.elements['edit'].Bind(wx.EVT_BUTTON, self.EditClicked)
         self.elements['browse'].Bind(wx.EVT_BUTTON, self.BrowseClicked)
+        
+        self.elements['reloadTUPTPlugins'].Bind(wx.EVT_BUTTON, self.ReloadTUPT)
+        self.elements['deleteTUPTPlugins'].Bind(wx.EVT_BUTTON, self.DeleteTUPT)
 
         self.Bind(wx.EVT_BUTTON, self.saveAll, id=xrc.XRCID("wxID_OK"))
         self.Bind(wx.EVT_BUTTON, self.cancelAll, id=xrc.XRCID("wxID_CANCEL"))
@@ -185,6 +193,8 @@ class SettingsDialog(wx.Dialog):
 
         self.elements['use_webui'].SetValue(self.utility.config.Read('use_webui', "boolean"))
         self.elements['webui_port'].SetValue(str(self.utility.config.Read('webui_port', "int")))
+        
+        self.LoadTUPTPlugins()
 
         wx.CallAfter(self.Refresh)
 
@@ -427,6 +437,104 @@ class SettingsDialog(wx.Dialog):
             self.elements['diskLocationCtrl'].SetValue(dlg.GetPath())
         else:
             pass
+
+    def LoadTUPTPlugins(self):
+        """Retrieve all the plug-ins owned by the PluginManager
+            Then update the gui of our settings dialog.
+            
+            Note that we hang a plugin_info object next to 
+            the String option in the list, for later use.
+        """
+        self.elements['allPluginsList'].Clear()
+        pluginmanager = self.guiUtility.app.tuptcontroller.pluginmanager
+        pluginMap = {}
+        for category in pluginmanager.GetCategories():
+            for plugin_info in pluginmanager.GetPluginDescriptorsForCategory(category):
+                #Make the name look good and attach real objects to it
+                #in the list, for easy retrieval.
+                name = category + "/" + plugin_info.name
+                pluginMap[name] = plugin_info
+        #Sort the list
+        pluginNames = pluginMap.keys()
+        pluginNames.sort()
+        #Insert the individual values
+        for name in pluginNames:
+            self.elements['allPluginsList'].Insert(name, self.elements['allPluginsList'].GetCount(), pluginMap[name])
+
+    def ReloadTUPT(self, event=None):
+        """Callback for when the user presses the reload button.
+            Calls the registered PluginManager to reload its plugins
+            and then updates the GUI. 
+            
+        Args:
+            event (wx.EVT_BUTTON) : the button press event
+        """
+        self.guiUtility.app.tuptcontroller.pluginmanager.LoadPlugins()
+        self.LoadTUPTPlugins()
+        
+    def __RemoveModuleFiles(self, filespath):
+        """Plug-ins can have either a single python file
+            or an entire folder.
+            If referencing a file, remove it and its compiled 
+            counterpart (if it exists).
+            If referencing a folder, just remove the entire folder
+            (with everything in it).
+            
+        Args:
+            filespath (str) : the file(path) pointed to by a Yapsy config file
+        """
+        if os.path.isfile(filespath + ".py"):
+            #Module is a single file
+            os.remove(filespath + ".py")
+            if os.path.isfile(filespath + ".pyc"):
+                #If we own a compiled class, remove that
+                #aswell.
+                os.remove(filespath + ".pyc")
+        elif os.path.isdir(filespath):
+            #Module is a folder
+            shutil.rmtree(filespath)
+        #Otherwise module does not exist
+        
+    def __RemoveByPluginInfo(self, pluginInfo):
+        """Given a yapsy PluginInfo object, remove all
+            corresponding auxiliary files.
+            
+        Args:
+            pluginInfo (yapsy.PluginInfo) : Yapsy plugin info to search and remove by
+        """
+        from yapsy.PluginFileLocator import PluginFileLocator
+        folder = self.guiUtility.app.tuptcontroller.pluginmanager.GetPluginFolder()
+        locator = PluginFileLocator()
+        locator.setPluginPlaces([folder])
+        #Retrieve all plug-ins from the currently registered folder
+        #These come in the form of ([Tuples], length)
+        allPluginsTuple = locator.locatePlugins()
+        for tuple in allPluginsTuple[0]:
+            #Each tuple in our list is then made up of
+            #(filename, module (path or filename), PluginInfo object)
+            filename = tuple[0]
+            module = tuple[1]
+            plugin_info = tuple[2]
+            #If this module corresponds to the one we want to delete
+            #Remove this plug-in and all of its auxiliary files.
+            #Then return
+            if module == pluginInfo.path:
+                self.__RemoveModuleFiles(module)
+                os.remove(filename)
+                break
+        
+    def DeleteTUPT(self, event=None):
+        """Callback for when the user presses the delete plug-in button.
+            Retrieve the selected value from the list and remove all
+            plug-in (auxiliary) files.
+            
+        Args:
+            event (wx.EVT_BUTTON) : the button press event
+        """
+        selected = self.elements['allPluginsList'].GetSelection()
+        plugin_info = self.elements['allPluginsList'].GetClientData(selected)
+        self.__RemoveByPluginInfo(plugin_info)
+        self.ReloadTUPT()
 
     def _SelectAll(self, dlg, event, nrchoices):
         if event.ControlDown():

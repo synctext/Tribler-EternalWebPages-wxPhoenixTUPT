@@ -634,6 +634,71 @@
 	                    <flag>wxEXPAND</flag>
 	                    <option>1</option>
 					</object>
+					<object class="sizeritem">
+                        <object class="wxPanel" name="tupt_panel">
+                        <hidden>1</hidden>
+                            <object class="wxBoxSizer">
+                                <orient>wxVERTICAL</orient>
+                                <object class="sizeritem">
+                                    <object class="wxStaticText">
+                                        <label>TUPT Settings</label>
+                                        <font>
+                                            <weight>bold</weight>
+                                            <size>11</size>
+                                        </font>
+                                    </object>
+                                </object>
+								<object class="sizeritem">
+                                    <object class="wxStaticLine">
+                                        <size>-1, 1</size>
+                                        <style>wxLI_HORIZONTAL</style>
+                                    </object>
+                                    <flag>wxEXPAND|wxBOTTOM</flag>
+                                    <border>7</border>
+                                </object>
+                                <object class="sizeritem">
+                                    <object class="wxStaticText">
+                                        <label>Plug-ins:</label>
+                                    </object>
+									<minsize>100,-1</minsize>
+                                </object>
+                                <object class="sizeritem">
+                                	<object class="wxBoxSizer">
+                                		<orient>wxVERTICAL</orient>
+                                		<object class="sizeritem">
+				                        	<object class="wxScrolledWindow" name="tupt_plugins_panel">
+				                        		<object class="wxBoxSizer">
+                                					<orient>wxVERTICAL</orient>
+					                                <object class="sizeritem">
+					                                    <object class="wxListBox" name="allPluginsList">
+					                                    </object>
+					                                    <style>wxLB_SINGLE</style>
+														<flag>wxEXPAND</flag>
+														<option>1</option>
+														<minsize>250,100</minsize>
+					                                </object>
+					                            </object>
+				                            </object>
+				                        </object>
+				                        <object class="sizeritem">
+                                            <object class="wxButton" name="reloadTUPTPlugins">
+                                                <label>Reload plug-ins</label>
+                                                <style>wxBU_EXACTFIT</style>
+                                            </object>
+                                        </object>
+                                        <object class="sizeritem">
+                                            <object class="wxButton" name="deleteTUPTPlugins">
+                                                <label>Delete selected plug-in</label>
+                                                <style>wxBU_EXACTFIT</style>
+                                            </object>
+                                        </object>
+		                            </object>
+		                        </object>
+                            </object>
+                        </object>
+                        <flag>wxEXPAND</flag>
+                        <option>1</option>
+                    </object>
 				</object>
                 <flag>wxEXPAND|wxALL</flag>
                 <border>10</border>

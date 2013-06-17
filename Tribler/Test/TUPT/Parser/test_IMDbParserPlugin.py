@@ -8,7 +8,7 @@ import urllib2
 class TestIMDbParserPlugin(unittest.TestCase):
     '''Test class to test the IMDbParserPlugin.'''
     
-    __result = {'title' : 'The Matrix', 'releaseYear' : 1999, 'director' : ['Andy Wachowski', 'Lana Wachowski']}
+    __result = {'title' : 'The Matrix', 'releaseYear' : 1999}
 
     def thisFolder(self):
         return os.path.dirname(__file__)
@@ -99,6 +99,8 @@ class TestIMDbParserPlugin(unittest.TestCase):
         result = parser.ParseWebSite(url, html)
         #Assert
         self.assertEqual(250, len(result))
+        self.assertFalse(result[0].dictionary['title'] == result[1].dictionary['title'])
+       
         
     def test_ParseTop250_Homepage(self):
         '''Test parsing the top 250 homepage on IMDB'''
@@ -113,6 +115,7 @@ class TestIMDbParserPlugin(unittest.TestCase):
         result = parser.ParseWebSite(url, html)
         #Assert
         self.assertEqual(250, len(result))
+        self.assertFalse(result[0].dictionary['title'] == result[1].dictionary['title'])
         
     def test_ParseBottom100(self):
         '''Test parsing the bottom 100 page on IMDB'''
@@ -127,6 +130,7 @@ class TestIMDbParserPlugin(unittest.TestCase):
         result = parser.ParseWebSite(url, html)
         #Assert
         self.assertEqual(100, len(result))
+        self.assertFalse(result[0].dictionary['title'] == result[1].dictionary['title'])
 
     def __AssertResult(self, result):
        '''Asserts the result for the parser'''

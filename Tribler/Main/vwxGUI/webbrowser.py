@@ -6,10 +6,13 @@ import time
 import thread
 import sys
 import traceback
-
+import os
+        
 from threading import Event
+from threading import Thread
 
 from Tribler.Main.vwxGUI.list import XRCPanel
+from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 from Tribler.Core.Libtorrent.LibtorrentMgr import LibtorrentMgr
 
 class WebBrowser(XRCPanel):
@@ -41,10 +44,13 @@ class WebBrowser(XRCPanel):
         self.adressBar = wx.TextCtrl(toolBarPanel,1, style = wx.TE_PROCESS_ENTER)
         #Register the enterkey.
         self.Bind(wx.EVT_TEXT_ENTER, self.loadURLFromAdressBar, self.adressBar)
+        #Create the loading graphic
+        self.loadingGraphic = WebBrowser.WebpageLoadingGraphic(toolBarPanel)
         #Add all the components to the toolbar.
         toolBar.Add(backwardButton, 0)
         toolBar.Add(forwardButton, 0)
         toolBar.Add(self.adressBar, 1, wx.EXPAND)
+        toolBar.Add(self.loadingGraphic.GetPanel(), 0, wx.ALIGN_CENTER_VERTICAL)
         toolBar.Add(goButton, 0)
         toolBarPanel.Layout()
         #Add the toolbar to the panel.
@@ -192,6 +198,7 @@ class WebBrowser(XRCPanel):
             self.__evtUserChangedText.clear()
             #Update the GUI (hide the infobar)
             self.HideInfoBar()
+            self.loadingGraphic.Animate()
             #Notify our listeners we are navigating to a new page
             navigatingNewPageEvent = WebBrowser.NavigatingNewPageEvent(mainUrl)
             thread.start_new(self.__notifyLoadedListeners, (navigatingNewPageEvent,))
@@ -202,6 +209,7 @@ class WebBrowser(XRCPanel):
     
     def onURLLoaded(self, event):
         '''Actions to be taken when an URL is loaded.'''
+        self.loadingGraphic.Freeze()
         if not self.__evtUserChangedText.isSet():
             #Update the adressbar to the 'real' website address
             #If the user isn't entering new data
@@ -310,4 +318,140 @@ class WebBrowser(XRCPanel):
             
         def GetURL(self):
             return self.url
+        
+    class WebpageLoadingGraphic(Thread):
+        """WebpageLoadingGraphic
+            Thread for the animated loading graphic next to the address bar
+            in the web browser.
+        """
+        
+        __loading = None            #Event to be signaled when we are loading a page
+        
+        __frame = -1                #The animation frame we are on [0,7], 8 for disabled
+        __bitmaps = None            #The image frames loaded in memory
+        
+        __backgroundBrush = None    #The background color
+        __panel = None              #The actual panel
+        
+        __alive = None              #Thread life
+        
+        def __init__(self, parent):
+            """Initialize our thread and forward the 'parent' to a wx.Panel
+                we own.
+            Args:
+                parent (wxWindow) : parent object for panel 
+            """
+            #Initialize our drawable surface
+            self.__panel = wx.Panel(parent)
+            #Initialze ourselves as a thread
+            Thread.__init__(self)
+            
+            #Set the panel size
+            self.__panel.SetSize((26,26))
+            self.__panel.SetMinSize((26,26))
+            
+            #Set up the loading event
+            self.__loading = Event()
+            #Start with the disabled image
+            self.__frame = 8
+            
+            #Resolve the path for our images
+            guiUtility = GUIUtility.getInstance()
+            imgPath = os.path.join(guiUtility.utility.getPath(), 'Tribler', 'Main', 'vwxGUI', 'images', '')
+            
+            #Load all of the bitmaps into memory
+            #Note that we do this because we switch images frequently
+            #and constantly doing IO to retrieve images is not a good idea.
+            self.__bitmaps = []
+            for i in range(8):
+                self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_' + str(i) + '.png', wx.BITMAP_TYPE_PNG))
+            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_greyed.png', wx.BITMAP_TYPE_PNG))
+            
+            #Set the background colour
+            self.__backgroundBrush = wx.Brush(wx.Colour(255,255,255))
+            
+            #Register for the paint event
+            self.__panel.Bind(wx.EVT_PAINT, self.Paint)
+            
+            #Set ourselves up for Frozen mode (disabled)
+            self.Freeze()
+            
+            #Set threading info
+            self.name = 'WebpageLoadingGraphicThread'
+            self.daemon = True
+            self.__alive = True
+            
+            #Finally, start the waiting loop
+            self.start()
+            
+        def __del__(self):
+            """When we are removed, signal the main loop in run() to end
+            """
+            self.__alive = False
+            
+        def SetBackgroundColour(self, colour):
+            """Set the background colour
+            
+            Args:
+                colour (wxColour) : colour for the background
+            """
+            self.__backgroundBrush = wx.Brush(colour)
+            
+        def GetPanel(self):
+            """Return our drawable panel
+            """
+            return self.__panel
+            
+        def Animate(self):
+            """Set animation mode.
+                Signal this when loading a webpage
+            """
+            self.__loading.set()
+            self.__panel.SetToolTipString("Loading webpage..")
+            
+        def Freeze(self):
+            """Set frozen mode.
+                Signal this when done loading a webpage
+            """
+            self.__loading.clear()
+            self.__frame = 8
+            self.__panel.Refresh()
+            self.__panel.SetToolTipString("Done loading webpage")
+            
+        def run(self):
+            """Loop through the animation.
+                Note that we do not block until a webpages loads:
+                this would mean we would never be able to detect
+                when we are no longer alive and need to return.
+                
+                Called when the Thread starts.
+            """
+            while self.__alive:
+                if not self.__loading.isSet():
+                    if not self.__loading.wait(0.5):
+                        continue 
+                self.__IncrementFrame()
+                time.sleep(0.05)
+                
+        def Paint(self, event):
+            """Receive an EVT_PAINT from our paintable
+            
+            Args:
+                event (wx.EVT_PAINT) : paint event object
+            """
+            if not self.__alive:
+                return
+            dc = wx.ClientDC(self.__panel)
+            dc.SetBackground(self.__backgroundBrush)
+            dc.Clear()
+            image = self.__bitmaps[self.__frame]
+            dc.DrawBitmap(image, 0, 0, True)
+            
+        def __IncrementFrame(self):
+            """Increment the iterator for the (non-frozen) bitmaps,
+                namely self.__frame.
+                Then repaint our paintable.
+            """
+            self.__frame = (self.__frame + 1)%8
+            self.__panel.Refresh()
         

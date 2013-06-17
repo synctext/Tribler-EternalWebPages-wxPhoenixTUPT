@@ -56,12 +56,12 @@ class TorrentFinderControl(Thread):
         oldSDResult = self.HasSDTorrent()
         #Add the torrents
         for item in torrentDefList:                
-                if not isinstance(item, IMovieTorrentDef):
-                    raise IllegalTorrentResultException("TorrentFinder plugin should return results of IMovieTorrentDef.")
-                self.ProcessTorrentDef(item, trust)
+            if not isinstance(item, IMovieTorrentDef):
+                raise IllegalTorrentResultException("TorrentFinder plugin should return results of IMovieTorrentDef.")
+            self.ProcessTorrentDef(item, trust)
         #Check to see if a callback needs to be made. The callback needs to be made if a result changed.
         if not oldHDResult == self.HasHDTorrent() or not oldSDResult == self.HasSDTorrent():
-                self.__resultCallback(self.__movie)
+            self.__resultCallback()
     
     def ProcessTorrentDef(self, definition, trust):
         """Inspect a returned torrent definition and place it in our list if appropriate.

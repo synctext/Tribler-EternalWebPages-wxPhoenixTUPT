@@ -76,6 +76,7 @@ class TUPTControl:
             if movies is not None:
                 self.__movieTorrentIterator = MovieTorrentIterator()
                 self.__infoBar = TorrentInfoBar(self.webview, self, self.__movieTorrentIterator)
+                self.__infoBar.ShowParsingState()
                 threads = []
                 for movie in movies:     
                     #Correct movie information

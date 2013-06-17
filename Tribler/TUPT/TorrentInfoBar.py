@@ -25,7 +25,6 @@ class TorrentInfoBar():
         self.__webview = webview
         self.__tuptControl = __tuptControl
         self.__movieTorrentIterator = movieTorrentIterator
-        self.Update()
     
     def Update(self):
         """Update the state using the movieTorrentIterator."""    
@@ -44,7 +43,16 @@ class TorrentInfoBar():
     
     def CheckForResults(self):
         """Check a final time if there are results """
-        pass
+        validMovieIndices = self.__GetValidMovieIndices()
+        if self.__movieTorrentIterator.HasMovie():
+            if len(validMovieIndices)>0:               
+               self.ShowMovieState(validMovieIndices)
+            else:
+                self.ShowNoTorrentFoundState()
+        else:          
+            self.ShowNoResultFoundState()
+            
+        self.__webview.ShowInfoBar()
     
     def __GetValidMovieIndices(self):
         """Get all movies that have a valid torrent
@@ -55,9 +63,17 @@ class TorrentInfoBar():
                 validMovieIndices.append(i)
         return validMovieIndices
     
+    def ShowNoTorrentFoundState(self):
+        """Show no torrent found state."""
+        # Create noResultFoundText.
+        noTorrentFoundText = " <b>No torrents found </b>"
+        noTorrentFoundLabel = wx.StaticText(self.__webview.infobaroverlay)
+        noTorrentFoundLabel.SetLabelMarkup(noTorrentFoundText)
+        self.__webview.SetInfoBarContents((noTorrentFoundLabel,))
+    
     def ShowNoResultFoundState(self):
         """Show no results found state."""
-        # Create parseLabel
+        # Create noResultFoundText.
         noResultFoundText = " <b>No results found </b>"
         noResultFoundLabel = wx.StaticText(self.__webview.infobaroverlay)
         noResultFoundLabel.SetLabelMarkup(noResultFoundText)

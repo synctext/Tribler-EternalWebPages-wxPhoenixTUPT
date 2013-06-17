@@ -356,14 +356,8 @@ class WebBrowser(XRCPanel):
             #Note that we do this because we switch images frequently
             #and constantly doing IO to retrieve images is not a good idea.
             self.__bitmaps = []
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_0.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_1.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_2.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_3.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_4.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_5.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_6.png', wx.BITMAP_TYPE_PNG))
-            self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_7.png', wx.BITMAP_TYPE_PNG))
+            for i in range(8):
+                self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_' + str(i) + '.png', wx.BITMAP_TYPE_PNG))
             self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_greyed.png', wx.BITMAP_TYPE_PNG))
             
             #Set the background colour

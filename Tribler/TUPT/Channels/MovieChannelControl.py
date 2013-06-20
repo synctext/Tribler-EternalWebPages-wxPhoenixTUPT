@@ -36,7 +36,7 @@ class MovieChannelControl(object):
             Returns True if a MovieChannelControl exists (bool)
         """
         return MovieChannelControl.__single != None
-        hasInstance = staticmethod(hasInstance)
+    hasInstance = staticmethod(hasInstance)
 
     @staticmethod
     def delInstance():

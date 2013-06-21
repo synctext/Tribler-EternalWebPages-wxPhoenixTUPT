@@ -88,10 +88,6 @@ class MovieChannelControl(object):
             #No existing channels found for our year,
             #Create a new channel
             return self.__CreateChannel(channelName, self.GetChannelDescriptionForYear(year))
-        elif totalHits == 1:
-            #In the perfect world our channel already exists
-            #and is the only one of its kind
-            return hits.values()[0].id
         else:
             #We found multiple channels that resemble our
             #requested channel. Select the right one.

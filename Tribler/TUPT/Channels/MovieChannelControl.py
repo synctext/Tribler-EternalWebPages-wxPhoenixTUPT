@@ -36,7 +36,7 @@ class MovieChannelControl(object):
             Returns True if a MovieChannelControl exists (bool)
         """
         return MovieChannelControl.__single != None
-        hasInstance = staticmethod(hasInstance)
+    hasInstance = staticmethod(hasInstance)
 
     @staticmethod
     def delInstance():
@@ -129,7 +129,7 @@ class MovieChannelControl(object):
             out.append(value)
         return out
     
-    def __GetMyChannel(self, name, description):
+    def GetMyChannel(self, name, description):
         """Get our own channel
         Args:
             name (str)        = Name of the channel.
@@ -153,7 +153,7 @@ class MovieChannelControl(object):
         Returns channelID (int)    
         """
         self.__channelManager.createChannel(name, description)
-        channelId = self.__GetMyChannel(name, description)
+        channelId = self.GetMyChannel(name, description)
         self.__channelManager.setChannelGenerated(channelId, True) #This is not the user's personal channel
         return channelId
     

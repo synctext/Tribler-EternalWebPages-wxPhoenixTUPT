@@ -4,7 +4,7 @@ import gzip
 import StringIO
 import xml.dom.minidom as minidom
 
-from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderPlugin
+from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
 from Tribler.TUPT.Movie import Movie
 
@@ -21,7 +21,7 @@ class KatPhMovieTorrentDef(IMovieTorrentDef):
         return 'kat.ph'
     
 
-class KatPhTorrentFinderPlugin(ITorrentFinderPlugin):
+class KatPhTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
 
     def __DecompressRss(self, content):
         f = StringIO.StringIO()
@@ -29,18 +29,11 @@ class KatPhTorrentFinderPlugin(ITorrentFinderPlugin):
         f.seek(0)
         return gzip.GzipFile(fileobj=f).read()
 
-    def __UrlToPageSrc(self, url):
-        req = urllib2.Request(url, headers={'User-Agent':"Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"})
-        opener = urllib2.build_opener()
-        contents = opener.open(req)
-        decoded = self.__DecompressRss(contents.read())
-        return decoded
-
     def __ParseResultPage(self, url, movie, n=10):
         """Given a kat.ph rss result page, return the first 'n' results
             as IMovieTorrentDefs
         """
-        page = self.__UrlToPageSrc(url)
+        page = self.UrlToPageSrc(url)
         dom = minidom.parseString(page)
             
         out = []

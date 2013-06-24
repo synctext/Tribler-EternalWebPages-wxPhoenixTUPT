@@ -1,4 +1,4 @@
-import wx
+import wx, os
 import wx.html2
 import urlparse
 import urllib2
@@ -29,45 +29,45 @@ class WebBrowser(XRCPanel):
              
         '''Create the toolbar'''
         toolBarPanel = wx.Panel(self)
-        toolBarPanel.SetBackgroundColour(wx.Colour(255,255,255))
+        toolBarPanel.SetBackgroundColour(wx.Colour(255, 255, 255))
         toolBar = wx.BoxSizer(wx.HORIZONTAL)
         toolBarPanel.SetSizer(toolBar)
-        #Create the toolbar buttons.
+        # Create the toolbar buttons.
         backwardButton = wx.Button(toolBarPanel, label="Backward")
         forwardButton = wx.Button(toolBarPanel, label="Forward")    
         goButton = wx.Button(toolBarPanel, label="Go")
-        #Register the actions
+        # Register the actions
         self.Bind(wx.EVT_BUTTON, self.goBackward, backwardButton)
         self.Bind(wx.EVT_BUTTON, self.goForward, forwardButton)
         self.Bind(wx.EVT_BUTTON, self.loadURLFromAdressBar, goButton)
-        #Create the adressbar.
-        self.adressBar = wx.TextCtrl(toolBarPanel,1, style = wx.TE_PROCESS_ENTER)
-        #Register the enterkey.
+        # Create the adressbar.
+        self.adressBar = wx.TextCtrl(toolBarPanel, 1, style=wx.TE_PROCESS_ENTER)
+        # Register the enterkey.
         self.Bind(wx.EVT_TEXT_ENTER, self.loadURLFromAdressBar, self.adressBar)
-        #Create the loading graphic
+        # Create the loading graphic
         self.loadingGraphic = WebBrowser.WebpageLoadingGraphic(toolBarPanel)
-        #Add all the components to the toolbar.
+        # Add all the components to the toolbar.
         toolBar.Add(backwardButton, 0)
         toolBar.Add(forwardButton, 0)
         toolBar.Add(self.adressBar, 1, wx.EXPAND)
         toolBar.Add(self.loadingGraphic.GetPanel(), 0, wx.ALIGN_CENTER_VERTICAL)
         toolBar.Add(goButton, 0)
         toolBarPanel.Layout()
-        #Add the toolbar to the panel.
+        # Add the toolbar to the panel.
         vSizer.Add(toolBarPanel, 0, wx.EXPAND)
         
         '''Add the overlay for the info bar'''
         self.infobaroverlay = wx.Panel(self)
-        self.infobaroverlay.SetBackgroundColour(wx.Colour(255,255,153))
+        self.infobaroverlay.SetBackgroundColour(wx.Colour(255, 255, 153))
         self.infobaroverlay.vSizer = vSizer
         vSizer.Add(self.infobaroverlay, 1, wx.EXPAND | wx.ALL, 1)
         
-        self.infobaroverlay.COLOR_BACKGROUND = wx.Colour(255,255,153)
-        self.infobaroverlay.COLOR_FOREGROUND = wx.Colour(50,50,50)
-        self.infobaroverlay.COLOR_BACKGROUND_SEL = wx.Colour(255,255,230)
-        self.infobaroverlay.COLOR_FOREGROUND_SEL = wx.Colour(0,0,0)
+        self.infobaroverlay.COLOR_BACKGROUND = wx.Colour(255, 255, 153)
+        self.infobaroverlay.COLOR_FOREGROUND = wx.Colour(50, 50, 50)
+        self.infobaroverlay.COLOR_BACKGROUND_SEL = wx.Colour(255, 255, 230)
+        self.infobaroverlay.COLOR_FOREGROUND_SEL = wx.Colour(0, 0, 0)
         
-        self.SetBackgroundColour(wx.Colour(205,190,112))
+        self.SetBackgroundColour(wx.Colour(205, 190, 112))
         
         '''Create the webview'''
         self.webviewPanel = wx.Panel(self)
@@ -76,7 +76,7 @@ class WebBrowser(XRCPanel):
         self.webview = wx.html2.WebView.New(self.webviewPanel)
         wvPanelSizer.Add(self.webview, 0, wx.EXPAND)
         self.webviewPanel.Layout()
-        #Clear the blank page loaded on startup.        
+        # Clear the blank page loaded on startup.        
         self.webview.ClearHistory()
         
         self.currentURL = ''
@@ -104,12 +104,12 @@ class WebBrowser(XRCPanel):
         '''Do final GUI calls'''
         self.HideInfoBar()
         
-        wx.CallAfter(self.webview.SetMinSize,(2000, -1))   #Fix initial expansion, 2.9.4.0 bug
+        wx.CallAfter(self.webview.SetMinSize, (2000, -1))  # Fix initial expansion, 2.9.4.0 bug
         
-        #Fix libtorrent bug with sockets
+        # Fix libtorrent bug with sockets
         self.__allowBrowsing = Event()
         self.__dhtFound = 0
-        thread.start_new(self.MonitorLibtorrentMgr,())    
+        thread.start_new(self.MonitorLibtorrentMgr, ())    
     
     def MonitorLibtorrentMgr(self):
         """When a socket is opened by the webview it interferes with
@@ -122,12 +122,12 @@ class WebBrowser(XRCPanel):
             try:
                 self.__dhtFound = mngr.get_dht_nodes()
             except:
-                #We are called after initialization of the LibtorrentMgr
-                #It can only mean one thing if we cannot retrieve them:
+                # We are called after initialization of the LibtorrentMgr
+                # It can only mean one thing if we cannot retrieve them:
                 # the user has closed Tribler, which means we need to 
                 # exit our loop.
                 break
-            if ( self.__dhtFound > 10 ):
+            if (self.__dhtFound > 10):
                 self.__allowBrowsing.set()
                 break
     
@@ -135,7 +135,7 @@ class WebBrowser(XRCPanel):
         """If the user has to wait for libtorrent to start up,
             notify the user via the infobar.
         """
-        completion = (float(self.__dhtFound)/11.0)*100.0
+        completion = (float(self.__dhtFound) / 11.0) * 100.0
         errorText = " <b>Cannot browse to page, waiting for Libtorrent to set up (%.2f%%)... Try again later</b>" % completion
         errorLabel = wx.StaticText(self.infobaroverlay)
         errorLabel.SetLabelMarkup(errorText)
@@ -177,29 +177,29 @@ class WebBrowser(XRCPanel):
             contents = opener.open(req)
             return contents.read()
         except urllib2.URLError, e:
-            return ''   # URL unknown, probably about:blank
+            return ''  # URL unknown, probably about:blank
     
     def __notifyLoadedListeners(self, event):
         for listener in self.loadlisteners:
             try:
                 listener.webpageLoaded(event, self.__UrlToPageSrc(event.GetURL()))
             except:
-                #Anything can go wrong with custom listeners, not our problem
+                # Anything can go wrong with custom listeners, not our problem
                 print >> sys.stderr, "WebBrowser: An error occurred in LoadedListener " + str(listener)
                 traceback.print_exc()
     
     def onURLNavigating(self, event):
         """Actions to be taken when an URL is navigated to"""
         mainUrl = self.webview.GetCurrentURL()
-        #Only take action when navigating to a new page. This event is also thrown for loading resources.
+        # Only take action when navigating to a new page. This event is also thrown for loading resources.
         if self.currentURL != mainUrl:
             self.currentURL = mainUrl
-            #Reset the event for the user changing the address bar text
+            # Reset the event for the user changing the address bar text
             self.__evtUserChangedText.clear()
-            #Update the GUI (hide the infobar)
+            # Update the GUI (hide the infobar)
             self.HideInfoBar()
             self.loadingGraphic.Animate()
-            #Notify our listeners we are navigating to a new page
+            # Notify our listeners we are navigating to a new page
             navigatingNewPageEvent = WebBrowser.NavigatingNewPageEvent(mainUrl)
             thread.start_new(self.__notifyLoadedListeners, (navigatingNewPageEvent,))
     
@@ -211,8 +211,8 @@ class WebBrowser(XRCPanel):
         '''Actions to be taken when an URL is loaded.'''
         self.loadingGraphic.Freeze()
         if not self.__evtUserChangedText.isSet():
-            #Update the adressbar to the 'real' website address
-            #If the user isn't entering new data
+            # Update the adressbar to the 'real' website address
+            # If the user isn't entering new data
             self.adressBar.SetValue(self.webview.GetCurrentURL())
     
     def OnInfoBarMouseOver(self, event):
@@ -240,7 +240,7 @@ class WebBrowser(XRCPanel):
                 textlabel.SetLabelMarkup(" <b>I am bold text</b>")
                 webbrowser.SetInfoBarContents((textlabel,wx.CENTER))
         """
-        #Remove all previous children
+        # Remove all previous children
         previousContent = self.infobaroverlay.GetSizer()
         if previousContent:
             windows = []
@@ -252,15 +252,15 @@ class WebBrowser(XRCPanel):
                     window.Destroy()
             self.infobaroverlay.Layout()
         self.infobaroverlay.ClearBackground()
-        #Overwrite with new sizer and contents
+        # Overwrite with new sizer and contents
         infobarSizer = wx.BoxSizer(wx.HORIZONTAL)
         width = 0
         for contentTuple in orderedContents:
-            flags = wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT if len(contentTuple)==1 else contentTuple[1]
+            flags = wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT if len(contentTuple) == 1 else contentTuple[1]
             width += contentTuple[0].GetMaxWidth() if contentTuple[0].GetMaxWidth() != -1 else 0
             infobarSizer.Add(contentTuple[0], 0, flags)
         width = self.GetSize().width - width
-        infobarSizer.Add((width,1))
+        infobarSizer.Add((width, 1))
         self.infobaroverlay.SetSizer(infobarSizer)
         infobarSizer.FitInside(self.infobaroverlay)
     
@@ -271,18 +271,18 @@ class WebBrowser(XRCPanel):
             Call this after laying out the vSizer of the main panel.
         """
         width, oHeight = self.infobaroverlay.GetSize()
-        #Fix infobar
+        # Fix infobar
         self.infobaroverlay.SetSize((width, height))
-        diffHeight = oHeight-height
+        diffHeight = oHeight - height
         self.infobaroverlay.vSizer.SetItemMinSize(self.infobaroverlay, (width, height))
         self.infobaroverlay.vSizer.Fit(self.infobaroverlay)
-        #Fix webview
+        # Fix webview
         width, oHeight = self.webviewPanel.GetSize()
         self.infobaroverlay.vSizer.SetItemMinSize(self.webviewPanel, (width, oHeight + diffHeight))
         self.infobaroverlay.vSizer.Fit(self.webviewPanel)
         self.webviewPanel.GetSizer().SetItemMinSize(self.webview, (width, oHeight + diffHeight))
         self.webviewPanel.GetSizer().Fit(self.webview)
-        #Finally, lay it out
+        # Finally, lay it out
         self.infobaroverlay.vSizer.Layout()
     
     def HideInfoBar(self):
@@ -291,7 +291,7 @@ class WebBrowser(XRCPanel):
     def __HideInfoBar(self):     
         """Hide the InfoBar immediately
         """ 
-        self.infobaroverlay.SetSizeHints(-1,0,-1,0)
+        self.infobaroverlay.SetSizeHints(-1, 0, -1, 0)
         self.infobaroverlay.vSizer.Layout()
         self.infobaroverlay.Hide()
         self.__fixInfobarHeight(0)
@@ -305,7 +305,7 @@ class WebBrowser(XRCPanel):
             Will grow to a maximum of finalHeight if the sizer deems it appropriate
         """
         self.infobaroverlay.Show()
-        self.infobaroverlay.SetSizeHints(-1, -1,-1, finalHeight)
+        self.infobaroverlay.SetSizeHints(-1, -1, -1, finalHeight)
         self.infobaroverlay.vSizer.Layout()
         self.infobaroverlay.Layout()
         self.__fixInfobarHeight(finalHeight)
@@ -325,15 +325,15 @@ class WebBrowser(XRCPanel):
             in the web browser.
         """
         
-        __loading = None            #Event to be signaled when we are loading a page
+        __loading = None  # Event to be signaled when we are loading a page
         
-        __frame = -1                #The animation frame we are on [0,7], 8 for disabled
-        __bitmaps = None            #The image frames loaded in memory
+        __frame = -1  # The animation frame we are on [0,7], 8 for disabled
+        __bitmaps = None  # The image frames loaded in memory
         
-        __backgroundBrush = None    #The background color
-        __panel = None              #The actual panel
+        __backgroundBrush = None  # The background color
+        __panel = None  # The actual panel
         
-        __alive = None              #Thread life
+        __alive = None  # Thread life
         
         def __init__(self, parent):
             """Initialize our thread and forward the 'parent' to a wx.Panel
@@ -341,47 +341,47 @@ class WebBrowser(XRCPanel):
             Args:
                 parent (wxWindow) : parent object for panel 
             """
-            #Initialize our drawable surface
+            # Initialize our drawable surface
             self.__panel = wx.Panel(parent)
-            #Initialze ourselves as a thread
+            # Initialze ourselves as a thread
             Thread.__init__(self)
             
-            #Set the panel size
-            self.__panel.SetSize((26,26))
-            self.__panel.SetMinSize((26,26))
+            # Set the panel size
+            self.__panel.SetSize((26, 26))
+            self.__panel.SetMinSize((26, 26))
             
-            #Set up the loading event
+            # Set up the loading event
             self.__loading = Event()
-            #Start with the disabled image
+            # Start with the disabled image
             self.__frame = 8
             
-            #Resolve the path for our images
+            # Resolve the path for our images
             guiUtility = GUIUtility.getInstance()
             imgPath = os.path.join(guiUtility.utility.getPath(), 'Tribler', 'Main', 'vwxGUI', 'images', '')
             
-            #Load all of the bitmaps into memory
-            #Note that we do this because we switch images frequently
-            #and constantly doing IO to retrieve images is not a good idea.
+            # Load all of the bitmaps into memory
+            # Note that we do this because we switch images frequently
+            # and constantly doing IO to retrieve images is not a good idea.
             self.__bitmaps = []
             for i in range(8):
                 self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_' + str(i) + '.png', wx.BITMAP_TYPE_PNG))
             self.__bitmaps.append(wx.Bitmap(imgPath + 'loading_greyed.png', wx.BITMAP_TYPE_PNG))
             
-            #Set the background colour
-            self.__backgroundBrush = wx.Brush(wx.Colour(255,255,255))
+            # Set the background colour
+            self.__backgroundBrush = wx.Brush(wx.Colour(255, 255, 255))
             
-            #Register for the paint event
+            # Register for the paint event
             self.__panel.Bind(wx.EVT_PAINT, self.Paint)
             
-            #Set ourselves up for Frozen mode (disabled)
+            # Set ourselves up for Frozen mode (disabled)
             self.Freeze()
             
-            #Set threading info
+            # Set threading info
             self.name = 'WebpageLoadingGraphicThread'
             self.daemon = True
             self.__alive = True
             
-            #Finally, start the waiting loop
+            # Finally, start the waiting loop
             self.start()
             
         def __del__(self):
@@ -452,6 +452,6 @@ class WebBrowser(XRCPanel):
                 namely self.__frame.
                 Then repaint our paintable.
             """
-            self.__frame = (self.__frame + 1)%8
+            self.__frame = (self.__frame + 1) % 8
             self.__panel.Refresh()
         

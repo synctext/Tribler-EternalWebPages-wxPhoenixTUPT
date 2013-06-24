@@ -1,3 +1,5 @@
+"""This file contains the IMDbParserPlugin class."""
+
 from imdb.parser.http.movieParser import DOMHTMLMovieParser
 from imdb.parser.http.topBottomParser import DOMHTMLTop250Parser
 from imdb.parser.http.topBottomParser import DOMHTMLBottom100Parser
@@ -27,8 +29,8 @@ class IMDbParserPlugin(IParserPlugin):
             html(str): htmlsource for the webpage.
         Returns a sequence of the parsed movies ([movie (Movie),])"""
         
-        #Split on ? and /.
-        url = re.split('\?|/',url)
+        # Split on ? and /.
+        url = re.split('\?|/', url)#IGNORE:W1401 regular expression
         if 'title' in url:
             return self.__ParseMovie(html)
         elif 'chart' in url: 
@@ -44,9 +46,9 @@ class IMDbParserPlugin(IParserPlugin):
             html (str): HTML source of the IMDB website.
         Returns a sequence of the parsed movies ([movie (Movie),])"""
         movieParser = DOMHTMLMovieParser()
-        #Parse the website.   
+        # Parse the website.   
         parseResult = movieParser.parse(html)['data']
-        #If we did not find any movie data, don't return a movie
+        # If we did not find any movie data, don't return a movie
         return self.__ParseMovies([parseResult])
     
     def __ParseChart(self, html, chartParser):
@@ -57,9 +59,9 @@ class IMDbParserPlugin(IParserPlugin):
         Returns a sequence of the parsed movies ([movie (Movie),])
         """
         parseResults = chartParser.parse(html)['data']
-        #Strip the first element of the parseResults.
+        # Strip the first element of the parseResults.
         parseResults = [parseResult[1] for parseResult in parseResults]
-        #convert to our Movie objects.
+        # convert to our Movie objects.
         return self.__ParseMovies(parseResults)
     
     def __ParseChartTop(self, html):
@@ -86,11 +88,11 @@ class IMDbParserPlugin(IParserPlugin):
         for imdbMovie in imdbpyMovies:
             movie = Movie()
             for key in self.__items:
-                #If the metadata exists add it to the result.
+                # If the metadata exists add it to the result.
                 if imdbMovie.has_key(key):
-                    #Call on the found result the corresponding parse function and store this on the proper moviekey in movies.
+                    # Call on the found result the corresponding parse function and store this on the proper moviekey in movies.
                     movie.dictionary[self.__items[key][0]] = self.__items[key][1](imdbMovie[key])
-            #Assert we have the minimum requirements posed by the Movie object
+            # Assert we have the minimum requirements posed by the Movie object
             if ((movie.dictionary.has_key('title')) or
                 (movie.dictionary.has_key('releaseYear'))):
                 result.append(movie)
@@ -101,14 +103,14 @@ class IMDbParserPlugin(IParserPlugin):
         return ['www.imdb.com']
 
     @staticmethod
-    def __ParseNothing(input):
+    def __ParseNothing(parseInput):
         """ Call this function if no extra parsing is necessary"""
-        return input
+        return parseInput
     
     @staticmethod
-    def __ParseDirector(input):
+    def __ParseDirector(parseInput):
         """Converts the format of director of the IMDb parser to our format."""
-        result =[]
-        for person in input:
+        result = []
+        for person in parseInput:
             result.append(person['name'])
         return result

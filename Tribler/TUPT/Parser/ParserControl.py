@@ -1,3 +1,4 @@
+"""File contains the ParserControl class."""
 import sys
 import urlparse
 
@@ -19,30 +20,30 @@ class ParserControl():
         Args:
             url (str) : url that needs to be parsed.
         Returns True if the url an be parsed. (bool)"""
-        plugin, trust, name = self.__FindPlugin(url)
+        plugin, _ , _ = self.__FindPlugin(url)
         return plugin is not None
     
-    def ParseWebsite(self,url, html):
+    def ParseWebsite(self, url, html):
         """Parse a website using the best parser
         Args:
             url (str) : url that needs to be parsed.
             html (str): HTML source of the website.
         Returns a sequence of the parsed movies and the trust of the parser used. ([movie (Movie),]), trust(float)  """
-        #Determine parser
+        # Determine parser
         plugin, trust, name = self.__FindPlugin(url)
-        #Check if we can parse the site
+        # Check if we can parse the site
         if plugin:        
-             #Defensivly execute the plugin.
+             # Defensivly execute the plugin.
             result = None
             try:
                 result = plugin.ParseWebSite(url, html)
-            except Exception:
-                print "Unexpected error in plugin ", name ,"." , sys.exc_info()
-            #Return the result
+            except Exception:# IGNORE:W0703
+                print "Unexpected error in plugin ", name , "." , sys.exc_info()
+            # Return the result
             if result != None:
                 for movie in result:
                     if not isinstance(movie, Movie):
-                        #Should return a Movie object.
+                        # Should return a Movie object.
                         raise IllegalParseResultException('Parser returned a result not of Type Movie.')
             return result, trust
         else:
@@ -56,13 +57,13 @@ class ParserControl():
         Returns plugin, trust of the plugin and name of the plugin. (plugin (IParserPlugin, trust (float), name (str))"""
         url = urlparse.urlparse(url).netloc    
     
-         #Determine parser
-        plugins =  self.__pluginManager.GetPluginDescriptorsForCategory('Parser')
+         # Determine parser
+        plugins = self.__pluginManager.GetPluginDescriptorsForCategory('Parser')
         plugin = None
         trust = -1
         name = None
         for plugin_info in plugins:
-            #Check if you want to use this plugin. This is based on a higher trust and if the plugin can parse the website.
+            # Check if you want to use this plugin. This is based on a higher trust and if the plugin can parse the website.
             if self.__GetPluginTrust(plugin_info) > trust and url in plugin_info.plugin_object.GetParseableSites():
                 plugin = plugin_info.plugin_object
                 trust = self.__GetPluginTrust(plugin_info)
@@ -76,16 +77,17 @@ class ParserControl():
         Returns the trust of the plugin (float)"""
         trust = 0.5
         try:
-            trust = plugin_info.details.getfloat("Core","Trust")
-        except:
+            trust = plugin_info.details.getfloat("Core", "Trust")
+        except Exception:# IGNORE:W0703
             print sys.exc_info()
-            trust = 0.5 #Not a valid float
+            trust = 0.5  # Not a valid float
         return trust
 
 class NoParserFoundException(Exception):
     """Exception that should be thrown when no parser was found on for page."""
     
     def __init__(self, value):
+        super(NoParserFoundException, self).__init__(value)
         self.value = value
         
     def __str__(self):
@@ -95,6 +97,7 @@ class IllegalParseResultException(Exception):
     """Exception that should be thrown when no parser was found on for page."""
     
     def __init__(self, value):
+        super(IllegalParseResultException, self).__init__(value)
         self.value = value
         
     def __str__(self):

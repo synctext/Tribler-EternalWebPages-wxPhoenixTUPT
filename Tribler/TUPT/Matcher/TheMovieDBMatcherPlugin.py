@@ -1,10 +1,11 @@
+"""This file contains the TheMovieDBMatcherPlugin class."""
+
 import urllib2
 import urlparse
 import re
 
 from bs4 import BeautifulSoup
 
-from Tribler.TUPT.Movie import Movie
 from Tribler.TUPT.Matcher.IMatcherPlugin import IMatcherPlugin
 
 class TheMovieDBMatcherPlugin(IMatcherPlugin):
@@ -65,9 +66,11 @@ class TheMovieDBMatcherPlugin(IMatcherPlugin):
         return soup.find_all("span")[1].string
 
     def __SearchMainCol(self, tag):
+        """Search for the title"""
         return tag.has_key('class') and tag['class'][0] == 'title'
     
     def __SearchCrewSheet(self, tag):
+        """Search for the crew."""
         return tag.has_key('class') and tag['class'][0] == 'crewStub'
 
     def __ScrapeResult(self, title):

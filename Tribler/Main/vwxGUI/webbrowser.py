@@ -23,88 +23,106 @@ class WebBrowser(XRCPanel):
     __evtUserChangedText = None
  
     def __init__(self, parent=None):
+        """Initialise the WebBrowser tab in Tribler.
+            This method handles GUI element creation
+            and event binding.
+            
+            Args:
+                parent (wxWindow) : parent window
+        """
+        #Initialise drawable panel
+        #and set up for adding children
         XRCPanel.__init__(self, parent)
-        
         vSizer = wx.BoxSizer(wx.VERTICAL)
              
-        '''Create the toolbar'''
-        toolBarPanel = wx.Panel(self)
-        toolBarPanel.SetBackgroundColour(wx.Colour(255,255,255))
-        toolBar = wx.BoxSizer(wx.HORIZONTAL)
-        toolBarPanel.SetSizer(toolBar)
-        #Create the toolbar buttons.
-        backwardButton = wx.Button(toolBarPanel, label="Backward")
-        forwardButton = wx.Button(toolBarPanel, label="Forward")    
-        goButton = wx.Button(toolBarPanel, label="Go")
-        #Register the actions
-        self.Bind(wx.EVT_BUTTON, self.goBackward, backwardButton)
-        self.Bind(wx.EVT_BUTTON, self.goForward, forwardButton)
-        self.Bind(wx.EVT_BUTTON, self.loadURLFromAdressBar, goButton)
-        #Create the adressbar.
-        self.adressBar = wx.TextCtrl(toolBarPanel,1, style = wx.TE_PROCESS_ENTER)
-        #Register the enterkey.
-        self.Bind(wx.EVT_TEXT_ENTER, self.loadURLFromAdressBar, self.adressBar)
-        #Create the loading graphic
-        self.loadingGraphic = WebBrowser.WebpageLoadingGraphic(toolBarPanel)
-        #Add all the components to the toolbar.
-        toolBar.Add(backwardButton, 0)
-        toolBar.Add(forwardButton, 0)
-        toolBar.Add(self.adressBar, 1, wx.EXPAND)
-        toolBar.Add(self.loadingGraphic.GetPanel(), 0, wx.ALIGN_CENTER_VERTICAL)
-        toolBar.Add(goButton, 0)
-        toolBarPanel.Layout()
-        #Add the toolbar to the panel.
+        #Add the toolbar
+        toolBarPanel = self.__initToolBarPanel()
         vSizer.Add(toolBarPanel, 0, wx.EXPAND)
         
-        '''Add the overlay for the info bar'''
-        self.infobaroverlay = wx.Panel(self)
-        self.infobaroverlay.SetBackgroundColour(wx.Colour(255,255,153))
+        #Add the infobar
+        self.__initInfoBar()
         self.infobaroverlay.vSizer = vSizer
         vSizer.Add(self.infobaroverlay, 1, wx.EXPAND | wx.ALL, 1)
         
+        #Add the webview
+        self.__initWebView()
+        vSizer.Add(self.webviewPanel, 2, wx.EXPAND) 
+        
+        #Add all children to our panel
+        #and layout our components
+        self.SetSizer(vSizer)
+        self.Layout()
+        
+        #Do post initialization calls
+        self.__postInit()   
+    
+    def __initToolBarPanel(self):
+        """Initialize the toolbar for the webview.
+            Contains the back/forward/go buttons, the loading
+            graphic and the address bar.
+        """
+        #Create the main panel and corresponding sizer.
+        toolBarPanel = WebBrowser.ToolBar(self)
+        #Initialize the event for when a user changes the address
+        #bar text during a page load.
+        self.__evtUserChangedText = Event()
+
+        return toolBarPanel
+    
+    def __initInfoBar(self):
+        """Initialize the infobar overlay for the webview.
+        """
+        #Create the main panel
+        self.infobaroverlay = wx.Panel(self)
+        
+        #Register all the primary infobar colors
         self.infobaroverlay.COLOR_BACKGROUND = wx.Colour(255,255,153)
         self.infobaroverlay.COLOR_FOREGROUND = wx.Colour(50,50,50)
         self.infobaroverlay.COLOR_BACKGROUND_SEL = wx.Colour(255,255,230)
         self.infobaroverlay.COLOR_FOREGROUND_SEL = wx.Colour(0,0,0)
-        
+        #Initialize the infobar color
+        self.infobaroverlay.SetBackgroundColour(self.infobaroverlay.COLOR_BACKGROUND)
+        #Initialize the border color
         self.SetBackgroundColour(wx.Colour(205,190,112))
         
-        '''Create the webview'''
+        #Register the mouse rollover events
+        self.infobaroverlay.Bind(wx.EVT_ENTER_WINDOW, self.OnInfoBarMouseOver, self.infobaroverlay)
+        self.infobaroverlay.Bind(wx.EVT_LEAVE_WINDOW, self.OnInfoBarMouseOut, self.infobaroverlay)
+        
+    def __initWebView(self):
+        """Initialize the actual wx WebView of the browser
+        """
+        #Create the main panel and corresponding sizer.
         self.webviewPanel = wx.Panel(self)
         wvPanelSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.webviewPanel.SetSizer(wvPanelSizer)
         self.webview = wx.html2.WebView.New(self.webviewPanel)
         wvPanelSizer.Add(self.webview, 0, wx.EXPAND)
-        self.webviewPanel.Layout()
-        #Clear the blank page loaded on startup.        
-        self.webview.ClearHistory()
         
+        #Layout the panel
+        self.webviewPanel.Layout()
+        
+        #Clear the blank page (about:blank) loaded on startup from
+        # our history.        
+        self.webview.ClearHistory()
         self.currentURL = ''
         
-        vSizer.Add(self.webviewPanel, 2, wx.EXPAND) 
-        
-        '''Add all components'''
-        self.SetSizer(vSizer)
-        self.Layout()
-        
-        '''Add observerlist for checking load events'''
-        self.loadlisteners = []
-        
-        '''Register the action on the event that a URL is being loaded and when finished loading'''
+        #Register the events for wx WebView 'loading' and 'loaded' 
         self.Bind(wx.html2.EVT_WEB_VIEW_NAVIGATED, self.onURLNavigating, self.webview)
         self.Bind(wx.html2.EVT_WEB_VIEW_LOADED, self.onURLLoaded, self.webview)
         
-        self.infobaroverlay.Bind(wx.EVT_ENTER_WINDOW, self.OnInfoBarMouseOver, self.infobaroverlay)
-        self.infobaroverlay.Bind(wx.EVT_LEAVE_WINDOW, self.OnInfoBarMouseOut, self.infobaroverlay)
-
-        '''Register typing event to prevent hindering the user while typing in a new address'''
-        self.adressBar.Bind(wx.EVT_TEXT, self.UserChangeText, self.adressBar)
-        self.__evtUserChangedText = Event()
-
-        '''Do final GUI calls'''
-        self.HideInfoBar()
+        #Contstruct a blank obrserver list for webview events
+        self.loadlisteners = []
         
-        wx.CallAfter(self.webview.SetMinSize,(2000, -1))   #Fix initial expansion, 2.9.4.0 bug
+    def __postInit(self):
+        """After all GUI elements have been added to the webview tab,
+            we can deal with bug-fixes for other packages relating to
+            this GUI element
+        """
+        #Layout the infobar properly on startup
+        self.HideInfoBar()
+        #Fix erronous initial webview expansion, wxPython 2.9.4.0 bug
+        wx.CallAfter(self.webview.SetMinSize,(2000, -1))  
         
         #Fix libtorrent bug with sockets
         self.__allowBrowsing = Event()
@@ -318,6 +336,71 @@ class WebBrowser(XRCPanel):
             
         def GetURL(self):
             return self.url
+        
+    class ToolBar(wx.Panel):
+        """Toolbar
+            GUI class for displaying the navigation
+            toolbar above the webview.
+        """
+        
+        def __init__(self, parent):
+            """Initialise the WebBrowser's navigation bar.
+                Contains the back/forward/go buttons, the loading graphic
+                and the addressbar.
+                
+                Args:
+                    parent (WebBrowser) : the parent webbrowser for this toolbar
+            """
+            #Initialize the drawable panel
+            wx.Panel.__init__(self, parent)
+            self.SetBackgroundColour(wx.Colour(255,255,255))
+            #Set our sizer
+            self.toolBar = wx.BoxSizer(wx.HORIZONTAL)
+            self.SetSizer(self.toolBar)
+            
+            #Create all of our children
+            self.__initChildren(parent)
+            #Add events to our children
+            self.__initEvents(parent)
+            #Finally add and layout our children
+            self.__Layout(parent)
+            
+        def __initChildren(self, parent):
+            """Create all the buttons, addresbar and loading graphic
+            """
+            #Create the toolbar buttons.
+            self.backwardButton = wx.Button(self, label="Backward")
+            self.forwardButton = wx.Button(self, label="Forward")    
+            self.goButton = wx.Button(self, label="Go")
+            #Create the adressbar.
+            parent.adressBar = wx.TextCtrl(self,1, style = wx.TE_PROCESS_ENTER)
+            #Create the loading graphic
+            parent.loadingGraphic = WebBrowser.WebpageLoadingGraphic(self)
+            
+        def __initEvents(self, parent):
+            """Register for the events of clicking buttons, pressing the enter key
+                and writing text.
+            """
+            #Register the events
+            #When buttons are clicked
+            parent.Bind(wx.EVT_BUTTON, parent.goBackward, self.backwardButton)
+            parent.Bind(wx.EVT_BUTTON, parent.goForward, self.forwardButton)
+            parent.Bind(wx.EVT_BUTTON, parent.loadURLFromAdressBar, self.goButton)
+            #When the enter key is pressed
+            parent.Bind(wx.EVT_TEXT_ENTER, parent.loadURLFromAdressBar, parent.adressBar)
+            #When text is typed (communicate this to others with an event)
+            parent.adressBar.Bind(wx.EVT_TEXT, parent.UserChangeText, parent.adressBar)
+        
+        def __Layout(self, parent):
+            """Add and layout all the panel's children
+            """
+            #Add all the components to the toolbar.
+            self.toolBar.Add(self.backwardButton, 0)
+            self.toolBar.Add(self.forwardButton, 0)
+            self.toolBar.Add(parent.adressBar, 1, wx.EXPAND)
+            self.toolBar.Add(parent.loadingGraphic.GetPanel(), 0, wx.ALIGN_CENTER_VERTICAL)
+            self.toolBar.Add(self.goButton, 0)
+            self.Layout()
         
     class WebpageLoadingGraphic(Thread):
         """WebpageLoadingGraphic

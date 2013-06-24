@@ -76,7 +76,7 @@ class MovieInserter(object):
         if myChannel and myChannel != channelId:
             #Merge our entire channel into the other channel
             self.__channelController.MergeChannelInto(myChannel, channelId)
-        elif not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
+        if not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
             #Merge the single torrent into the other channel
             duplicateInfoHash = self.__channelController.ChannelGetTorrentFromName(channelId, name)
             if not duplicateInfoHash:

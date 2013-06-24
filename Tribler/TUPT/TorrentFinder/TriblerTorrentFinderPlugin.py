@@ -12,36 +12,11 @@ from Tribler.TUPT.Movie import Movie
 
 class TriblerMovieTorrentDef(IMovieTorrentDef):
 
-    seeders = None          # Set in init
-    leechers = None         # Set in init
-    highdef = None          # Set in init
-    moviedescriptor = None  # Set externally
-    torrentname = None      # Set in init
-    torrenturl = None       # Set externally
-
     def __init__(self, torrent):
         self.seeders = torrent['num_seeders'] or 0
         self.leechers = torrent['num_leechers'] or 0
         self.highdef = str(torrent['name']).find('HD') != -1 or str(torrent['name']).find('1080p') != -1
         self.torrentname = torrent['name']
-
-    def GetSeeders(self):
-        return self.seeders
-
-    def GetLeechers(self):
-        return self.leechers
-
-    def IsHighDef(self):
-        return self.highdef
-
-    def GetMovieDescriptor(self):
-        return self.moviedescriptor
-
-    def GetTorrentName(self):
-        return self.torrentname
-
-    def GetTorrentURL(self):
-        return self.torrenturl
 
     def GetTorrentProviderName(self):
         return 'Tribler'

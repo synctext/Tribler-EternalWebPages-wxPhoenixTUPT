@@ -63,28 +63,71 @@ class WebBrowser(XRCPanel):
     __browsing_history = False #Are we currently browsing our history (i.e. do not count this page as new)
    
     def __init__(self, parent=None):
+        """Initialise the WebBrowser tab in Tribler.
+            This method handles GUI element creation
+            and event binding.
+        Args:
+            parent (wxWindow) : parent window
+        """
+        #Initialise drawable panel
+        #and set up for adding children
         XRCPanel.__init__(self, parent)
-        
         vSizer = wx.BoxSizer(wx.VERTICAL)
              
-        """Create the toolbar"""
+        #Create and add the toolbar to the panel.
+        self.__initToolbar()
+        vSizer.Add(self.toolBar, 0, wx.EXPAND)
+        
+        #Create the webview
+        self.webview = wx.html2.WebView.New(self)
+        
+        #Register Resource Sniffer with webview
+        self.__sniffer = ResourceSniffer()
+        self.__reshandler = ViewmodeResourceHandler(self.__sniffer)
+        self.webview.RegisterHandler(self.__reshandler)
+        
+        #Initialize the default view mode
+        self.__initViewmode()
+              
+        #Add the webview with all its children
+        vSizer.Add(self.webview, 1, wx.EXPAND) 
+        
+        #Add all components and layout
+        self.SetSizer(vSizer)
+        self.Layout()
+        
+        #Register the action on the event that a URL is being loaded and when finished loading
+        self.Bind(wx.html2.EVT_WEBVIEW_LOADED, self.onURLLoaded, self.webview)
+        self.Bind(wx.html2.EVT_WEBVIEW_NAVIGATING, self.onURLLoading, self.webview)
+        
+        #Load the default URL
+        self.LoadURL("about:blank")
+    
+    def __initToolbar(self):
+        """Initialize the toolbar for the webview.
+            Contains the back/forward/go/seed/viewmode buttons
+            and the address bar.
+        """
         self.toolBar = wx.BoxSizer(wx.HORIZONTAL)
+        
         #Create the toolbar buttons.
         backwardButton = wx.Button(self, label="Backward")
         forwardButton = wx.Button(self, label="Forward")    
         goButton = wx.Button(self, label="Go")
         self.__seedButton = wx.Button(self, label="Seed")
         self.viewmodeButton = wx.Button(self, label="OfflineMode")
+        #Create the adressbar.
+        self.adressBar = wx.TextCtrl(self,1, style = wx.TE_PROCESS_ENTER)
+        
         #Register the actions
         self.Bind(wx.EVT_BUTTON, self.goBackward, backwardButton)
         self.Bind(wx.EVT_BUTTON, self.goForward, forwardButton)
         self.Bind(wx.EVT_BUTTON, self.loadURLFromAdressBar, goButton)
         self.Bind(wx.EVT_BUTTON, self.seed, self.__seedButton)
         self.Bind(wx.EVT_BUTTON, self.toggleViewMode, self.viewmodeButton)
-        #Create the adressbar.
-        self.adressBar = wx.TextCtrl(self,1, style = wx.TE_PROCESS_ENTER)
         #Register the enterkey.
         self.Bind(wx.EVT_TEXT_ENTER, self.loadURLFromAdressBar, self.adressBar)
+        
         #Add all the components to the toolbar.
         self.toolBar.Add(backwardButton, 0)
         self.toolBar.Add(forwardButton, 0)
@@ -92,18 +135,11 @@ class WebBrowser(XRCPanel):
         self.toolBar.Add(goButton, 0)
         self.toolBar.Add(self.viewmodeButton, 0)
         self.toolBar.Add(self.__seedButton,0)
-        #Add the toolbar to the panel.
-        vSizer.Add(self.toolBar, 0, wx.EXPAND)
         
-        """Create the webview"""
-        self.webview = wx.html2.WebView.New(self)
-        
-        """Register Resource Sniffer with webview"""
-        self.__sniffer = ResourceSniffer()
-        self.__reshandler = ViewmodeResourceHandler(self.__sniffer)
-        self.webview.RegisterHandler(self.__reshandler)
-        
-        """Register Viewmode Switcher with webview"""
+    def __initViewmode(self):
+        """Initialize the viewmode switching backend
+        """
+        #Register Viewmode Switcher with webview
         self.__viewmodeswitcher = ViewmodeSwitchHandler(self)
         self.webview.RegisterHandler(self.__viewmodeswitcher)
         
@@ -111,18 +147,6 @@ class WebBrowser(XRCPanel):
         self.webview.ClearHistory()
         self.__history = WebviewHistory()
         self.setViewMode('INTERNET')
-              
-        vSizer.Add(self.webview, 1, wx.EXPAND) 
-        
-        """Add all components"""
-        self.SetSizer(vSizer)
-        self.Layout()
-        
-        """Register the action on the event that a URL is being loaded and when finished loading"""
-        self.Bind(wx.html2.EVT_WEBVIEW_LOADED, self.onURLLoaded, self.webview)
-        self.Bind(wx.html2.EVT_WEBVIEW_NAVIGATING, self.onURLLoading, self.webview)
-        
-        self.LoadURL("about:blank")
     
     def goBackward(self, event):
         """Go to the previous loaded page.

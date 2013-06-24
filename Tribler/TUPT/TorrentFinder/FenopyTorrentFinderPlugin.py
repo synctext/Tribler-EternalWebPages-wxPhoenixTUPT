@@ -31,7 +31,7 @@ class FenopyMovieTorrentDef(IMovieTorrentDef):
     def GetTorrentProviderName(self):
         return 'Fenopy'
 
-class TriblerTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+class FenopyTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
 
     def __GetTorrentDefs(self, src, movie):
         """Split our soup into search results

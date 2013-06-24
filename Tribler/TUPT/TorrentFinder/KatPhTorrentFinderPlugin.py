@@ -33,7 +33,7 @@ class KatPhTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
         """Given a kat.ph rss result page, return the first 'n' results
             as IMovieTorrentDefs
         """
-        page = self.UrlToPageSrc(url)
+        page = self.__DecompressRss(self.UrlToPageSrc(url))
         dom = minidom.parseString(page)
             
         out = []

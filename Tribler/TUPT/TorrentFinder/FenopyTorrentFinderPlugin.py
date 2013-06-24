@@ -10,14 +10,6 @@ from Tribler.TUPT.Movie import Movie
 class FenopyMovieTorrentDef(IMovieTorrentDef):
     """TorrentFinder plugin that can find plugins on Fenopy."""
     
-
-    seeders = None          # Set in init
-    leechers = None         # Set in init
-    highdef = None          # Set in init
-    moviedescriptor = None  # Set externally
-    torrentname = None      # Set in init
-    torrenturl = None       # Set in init
-
     def __SearchSeeder(self, tag):
         return tag.has_key('class') and 'se' in tag['class']
     
@@ -35,24 +27,6 @@ class FenopyMovieTorrentDef(IMovieTorrentDef):
         self.torrentname = str(tag.td.a['title'])
         self.torrenturl = self.__ExtractMagnet(str(tag))
         self.highdef = self.torrentname.find("1080p") != -1
-
-    def GetSeeders(self):
-        return self.seeders
-
-    def GetLeechers(self):
-        return self.leechers
-
-    def IsHighDef(self):
-        return self.highdef
-
-    def GetMovieDescriptor(self):
-        return self.moviedescriptor
-
-    def GetTorrentName(self):
-        return self.torrentname
-
-    def GetTorrentURL(self):
-        return self.torrenturl
 
     def GetTorrentProviderName(self):
         return 'Fenopy'

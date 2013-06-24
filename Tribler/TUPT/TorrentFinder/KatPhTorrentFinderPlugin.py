@@ -10,37 +10,12 @@ from Tribler.TUPT.Movie import Movie
 
 class KatPhMovieTorrentDef(IMovieTorrentDef):
 
-    seeders = None          # Set in init
-    leechers = None         # Set in init
-    highdef = None          # Set in init
-    moviedescriptor = None  # Set externally
-    torrentname = None      # Set in init
-    torrenturl = None       # Set in init
-
     def __init__(self, node):
         self.highdef = str(node.getElementsByTagName('category')[0].childNodes[0].nodeValue).find('Highres Movies') != -1
         self.seeders = int(node.getElementsByTagName('torrent:seeds')[0].childNodes[0].nodeValue)
         self.leechers = int(node.getElementsByTagName('torrent:peers')[0].childNodes[0].nodeValue)
         self.torrentname = str(node.getElementsByTagName('torrent:fileName')[0].childNodes[0].nodeValue)
         self.torrenturl = node.getElementsByTagName('enclosure')[0].getAttribute('url') 
-
-    def GetSeeders(self):
-        return self.seeders
-
-    def GetLeechers(self):
-        return self.leechers
-
-    def IsHighDef(self):
-        return self.highdef
-
-    def GetMovieDescriptor(self):
-        return self.moviedescriptor
-
-    def GetTorrentName(self):
-        return self.torrentname
-
-    def GetTorrentURL(self):
-        return self.torrenturl
 
     def GetTorrentProviderName(self):
         return 'kat.ph'

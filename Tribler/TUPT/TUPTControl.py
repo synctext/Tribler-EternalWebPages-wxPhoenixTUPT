@@ -1,16 +1,11 @@
+"""File contains the TUPTControl class."""
+
 from threading import Event
 
 from Tribler.Core.Session import Session
 from Tribler.Core.TorrentDef import TorrentDef
-from Tribler.Core.exceptions import DuplicateDownloadException
 
 from Tribler.Main.vwxGUI.SearchGridManager import LibraryManager
-from Tribler.Main.vwxGUI.SearchGridManager import TorrentManager
-from Tribler.Main.Utility.GuiDBTuples import CollectedTorrent, Torrent
-from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
-from Tribler.Main.globals import DefaultDownloadStartupConfig
-
-from Tribler.PluginManager.PluginManager import PluginManager
 
 from Tribler.TUPT.TorrentInfoBar import TorrentInfoBar
 from Tribler.TUPT.ViewmodeSwitcher import ViewmodeSwitcher
@@ -39,17 +34,23 @@ class TUPTControl:
     __callbackTDEvent = Event()
     __callbackTorrentdef = None
     
+    mainFrame = None
+    webview = None
+    viewmodeSwitcher = None
+    
     def __init__(self, pluginManager):
         self.pluginmanager = pluginManager
         self.parserControl = ParserControl(pluginManager)
         self.matcherControl = MatcherControl(pluginManager)
         self.__movieTorrentIterator = MovieTorrentIterator()
         
-        #Setup the plugins.
+        # Setup the plugins.
         self.pluginmanager.RegisterCategory("Matcher", IMatcherPlugin)
         self.pluginmanager.RegisterCategory("Parser", IParserPlugin)
         self.pluginmanager.RegisterCategory("TorrentFinder", ITorrentFinderPlugin)
         self.pluginmanager.LoadPlugins()
+        
+        #
         
     def CoupleGUI(self, gui):
         """Couple the gui with this TUPTControl
@@ -69,29 +70,29 @@ class TUPTControl:
             event (wxEventType): navigation event.
             html (str) : html source of the webpage that is loaded.
         """
-        #Parse the Website
+        # Parse the Website
         if self.parserControl.HasParser(event.GetURL()):
             movies, trust = self.parserControl.ParseWebsite(event.GetURL(), html)
-            #Check if there a movies on the website.
+            # Check if there a movies on the website.
             if movies is not None:
                 self.__movieTorrentIterator = MovieTorrentIterator()
                 self.__infoBar = TorrentInfoBar(self.webview, self, self.__movieTorrentIterator)
                 self.__infoBar.ShowParsingState()
                 threads = []
                 for movie in movies:     
-                    #Correct movie information
+                    # Correct movie information
                     if trust == 1:
-                        #If we fully trust the parser, skip correction
+                        # If we fully trust the parser, skip correction
                         movie = movie
                     else:
                         movie = self.matcherControl.CorrectMovie(movie)
-                    #Find torrents corresponding to the movie.
+                    # Find torrents corresponding to the movie.
                     torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)
                     threads.append(torrentFinder)
                     torrentFinder.start()                    
                     movieTorrent = MovieTorrent(movie, torrentFinder)                    
                     self.__movieTorrentIterator.append(movieTorrent)
-                #Wait for all threads to finish.
+                # Wait for all threads to finish.
                 for thread in threads:
                     thread.join()
                 self.__infoBar.CheckForResults()                    
@@ -100,31 +101,31 @@ class TUPTControl:
         """Update the infobar to the next state."""
         self.__infoBar.Update()
     
-    def DownloadHDMovie(self, n = 0):
+    def DownloadHDMovie(self, n=0):
         """Start downloading the selected movie in HD quality
          Args:
             optional:
                 n (int) = index of the torrent that will be played."""
-        #Download the torrent.
+        # Download the torrent.
         if self.__movieTorrentIterator.HasHDTorrent(n):
-            self.__DownloadURL(self.__movieTorrentIterator.GetNextHDTorrent(n).GetTorrentURL(), 
+            self.__DownloadURL(self.__movieTorrentIterator.GetNextHDTorrent(n).GetTorrentURL(),
                                self.__movieTorrentIterator.GetMovie(n).movie,
                                True)
-        #Update the infobar. This has to be done regardless of if a torrent was added or not.
+        # Update the infobar. This has to be done regardless of if a torrent was added or not.
         if not self.__movieTorrentIterator.HasSDTorrent(n):
             self.__infoBar.RemoveSDQuality()
 
-    def DownloadSDMovie(self, n = 0):
+    def DownloadSDMovie(self, n=0):
         """Start downliading the selected movie in SD quality
         Args:
             optional:
                 n (int) = index of the torrent that will be played."""
-        #Check if a torrent exists.
+        # Check if a torrent exists.
         if self.__movieTorrentIterator.HasSDTorrent(n):
-            self.__DownloadURL(self.__movieTorrentIterator.GetNextSDTorrent(n).GetTorrentURL(), 
+            self.__DownloadURL(self.__movieTorrentIterator.GetNextSDTorrent(n).GetTorrentURL(),
                                self.__movieTorrentIterator.GetMovie(n).movie,
                                False)
-        #Update the infobar. This has to be done regardless of if a torrent was added or not.
+        # Update the infobar. This has to be done regardless of if a torrent was added or not.
         if not self.__movieTorrentIterator.HasSDTorrent(n):
             self.__infoBar.RemoveSDQuality()
     
@@ -135,10 +136,10 @@ class TUPTControl:
             movie (Movie) : movie that will be downloaded
             isHD (bool) : bool representing if the movie is in HD quality
         """
-        #Start downloading the torrent.
+        # Start downloading the torrent.
         torrentDef = None
         if url.startswith('http://'):            
-            torrentDef  = TorrentDef.load_from_url(url)
+            torrentDef = TorrentDef.load_from_url(url)
         elif url.startswith('magnet:?'):
             TorrentDef.retrieve_from_magnet(url, self.__MagnetCallback)
             self.__callbackTDEvent.wait()
@@ -146,15 +147,15 @@ class TUPTControl:
             self.__callbackTorrentdef = None
             self.__callbackTDEvent.clear()
 
-        #Update the channel
+        # Update the channel
         channelInserter = MovieInserter()
         channelInserter.Insert(torrentDef, movie, isHD)
 
         session = Session.get_instance()
-        #Check if a torrent is already added.        
+        # Check if a torrent is already added.        
         downloadState = self.__FindDownloadStateByInfoHash(torrentDef.infohash)   
         if downloadState == None:
-            #Add the torrent if is not already added
+            # Add the torrent if is not already added
             downloadState = session.start_download(torrentDef).network_get_state(None, False, sessioncalling=True)
          
         libraryManager = LibraryManager.getInstance()
@@ -168,7 +169,7 @@ class TUPTControl:
         self.__callbackTorrentdef = torrentdef
         self.__callbackTDEvent.set()    
  
-    def __FindDownloadStateByInfoHash(self, infohash):
+    def __FindDownloadStateByInfoHash(self, infohash):        
         """Look for Downloadstate using the infohash
         Args:
             infohash : Find the download state 
@@ -189,31 +190,53 @@ class MovieTorrentIterator:
         self.__movies = []
     
     def append(self, movieTorrent):
+        """Add a new movie.
+        Args:
+            movieTorrent (MovieTorrent): movie to be added."""
         self.__movies.append(movieTorrent)
         
     def GetSize(self):
+        """Return the size of the Iterator (int)."""
         return len(self.__movies)
         
     def HasHDTorrent(self, n):
+        """Returns true if the MovieTorrent has a HD Torrent (bool).
+        Args:
+            n (int) : index of the movie."""
         return self.__movies[n].HasHDTorrent()
     
     def HasSDTorrent(self, n):
+        """Returns true if the MovieTorrent has a SD Torrent (bool).
+        Args:
+            n (int) : index of the movie."""
         return self.__movies[n].HasSDTorrent()
     
     def HasTorrent(self, n):
+        """Returns true if the MovieTorrent has a Torrent (bool).
+        Args:
+            n (int) : index of the movie."""
         return self.__movies[n].HasTorrent()
     
     def HasMovie(self):
         """Returns True if the movietorrentIterator has a movie."""
         return len(self.__movies) > 0
     
-    def GetMovie(self,n):
+    def GetMovie(self, n):
+        """Returns the movie (MovieTorrent)
+        Args:
+            n (int) : index of the movie."""
         return self.__movies[n]
     
     def GetNextHDTorrent(self, n):
+        """Returns the HD Torrent (IMovieTorrentDef).
+        Args:
+            n (int) : index of the movie."""
         return self.__movies[n].GetNextHDTorrent()
     
     def GetNextSDTorrent(self, n):
+        """Returns the SD Torrent (IMovieTorrentDef).
+        Args:
+            n (int) : index of the movie."""
         return self.__movies[n].GetNextSDTorrent()
         
         
@@ -225,17 +248,22 @@ class MovieTorrent:
         self.torrentFinder = torrentFinder
     
     def HasHDTorrent(self):
+        """Returns true if the MovieTorrent has a HD Torrent (bool)."""
         return len(self.torrentFinder.GetHDTorrentList()) > 0    
     
     def HasSDTorrent(self):
+        """Returns true if the MovieTorrent has a SD Torrent (bool)."""
         return len(self.torrentFinder.GetSDTorrentList()) > 0
     
     def HasTorrent(self):
+        """Returns true if the MovieTorrent has a Torrent (bool)."""
         return self.HasHDTorrent() or self.HasSDTorrent()
     
-    def GetNextHDTorrent(self):  
+    def GetNextHDTorrent(self):
+        """Returns the next HD torrent (IMovieTorrentDef)."""  
         return self.torrentFinder.GetHDTorrentList().pop(0)
     
-    def GetNextSDTorrent(self):  
+    def GetNextSDTorrent(self):
+        """Returns the next SD torrent (IMovieTorrentDef)."""    
         return self.torrentFinder.GetSDTorrentList().pop(0)
    

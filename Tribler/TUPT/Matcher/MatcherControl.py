@@ -1,3 +1,7 @@
+"""File contains the MatcherControl class."""
+
+import sys
+
 from Tribler.TUPT.Movie import Movie
 
 class MatcherControl:
@@ -40,7 +44,7 @@ class MatcherControl:
                 if highestFrequency == '' or self.__termTable[attribute][value] > self.__termTable[attribute][highestFrequency]:
                     highestFrequency = value
             if self.__termTable[attribute][highestFrequency] >= mintrust:
-                finalDict[attribute] = value
+                finalDict[attribute] = highestFrequency
         return finalDict
     
     def CorrectMovie(self, movie):
@@ -56,12 +60,12 @@ class MatcherControl:
             trust = 0.5
             try:
                 trust = plugin_info.details.getfloat("Core","Trust")
-            except:
+            except Exception:# IGNORE:W0703
                 trust = 0.5 #Not a valid float
             #Defensivly execute the plugin.
             try:
                 self.__RegisterPluginResults(plugin_info.plugin_object, movie, trust)
-            except Exception:
+            except Exception:# IGNORE:W0703
                 print "Unexpected error in plugin "+ plugin_info.name +".\n"+ sys.exc_info()[0]
         out = Movie()
         out.dictionary = self.__GetFinalDict()

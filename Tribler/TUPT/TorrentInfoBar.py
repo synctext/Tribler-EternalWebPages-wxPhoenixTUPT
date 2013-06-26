@@ -195,7 +195,6 @@ class TorrentInfoBar():
         #Set default value to SD quality if no HD quality    
         if not movieTorrent.HasHDTorrent():
             self.__comboBox.SetValue(self.SDCHOICE)
-        self.__webview.infobaroverlay.Refresh()
             
     def __CreateStdComboCtrl(self, width = 150, callback = None):
         """Create a dropdown control set (comboBox and popupCtrl) in our theme

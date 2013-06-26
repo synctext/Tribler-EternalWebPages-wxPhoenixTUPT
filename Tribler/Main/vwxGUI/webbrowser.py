@@ -8,8 +8,7 @@ import sys
 import traceback
 import os
         
-from threading import Event
-from threading import Thread
+from threading import Event, Thread, Lock
 
 from Tribler.Main.vwxGUI.list import XRCPanel
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
@@ -88,6 +87,9 @@ class WebBrowser(XRCPanel):
         #Register the mouse rollover events
         self.infobaroverlay.Bind(wx.EVT_ENTER_WINDOW, self.OnInfoBarMouseOver, self.infobaroverlay)
         self.infobaroverlay.Bind(wx.EVT_LEAVE_WINDOW, self.OnInfoBarMouseOut, self.infobaroverlay)
+        
+        #Create the update lock
+        self.infobarlock = Lock()
         
     def __initWebView(self):
         """Initialize the actual wx WebView of the browser
@@ -258,6 +260,7 @@ class WebBrowser(XRCPanel):
                 textlabel.SetLabelMarkup(" <b>I am bold text</b>")
                 webbrowser.SetInfoBarContents((textlabel,wx.CENTER))
         """
+        self.infobarlock.acquire()
         #Remove all previous children
         previousContent = self.infobaroverlay.GetSizer()
         if previousContent:
@@ -281,6 +284,7 @@ class WebBrowser(XRCPanel):
         infobarSizer.Add((width,1))
         self.infobaroverlay.SetSizer(infobarSizer)
         infobarSizer.FitInside(self.infobaroverlay)
+        self.infobarlock.release()
     
     def __fixInfobarHeight(self, height):
         """In wxPython 2.9.0 SetSizeHints does not function properly,
@@ -309,11 +313,12 @@ class WebBrowser(XRCPanel):
     def __HideInfoBar(self):     
         """Hide the InfoBar immediately
         """ 
+        self.infobarlock.acquire()
         self.infobaroverlay.SetSizeHints(-1,0,-1,0)
         self.infobaroverlay.vSizer.Layout()
         self.infobaroverlay.Hide()
         self.__fixInfobarHeight(0)
-        self.Refresh()
+        self.infobarlock.release()
 
     def ShowInfoBar(self, finalHeight=28.0):
         wx.CallAfter(self.__ShowInfoBar, finalHeight)
@@ -322,12 +327,13 @@ class WebBrowser(XRCPanel):
         """Animated InfoBar drop down.
             Will grow to a maximum of finalHeight if the sizer deems it appropriate
         """
-        self.infobaroverlay.Show()
+        self.infobarlock.acquire()
         self.infobaroverlay.SetSizeHints(-1, -1,-1, finalHeight)
         self.infobaroverlay.vSizer.Layout()
         self.infobaroverlay.Layout()
+        self.infobaroverlay.Show()
         self.__fixInfobarHeight(finalHeight)
-        self.Refresh()
+        self.infobarlock.release()
             
     class NavigatingNewPageEvent(object):
         

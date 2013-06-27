@@ -1,11 +1,13 @@
+"""This file contains the SortedTorrentList class."""
+
 import difflib
 
 class SortedTorrentList:
     """Class for sorting search results as they come in
     """
     
-    __orderedList = None    # List of tuples of a torrentDef coupled to a rank
-    __userDict = None       # Dictionary of named quality identifying words
+    __orderedList = None  # List of tuples of a torrentDef coupled to a rank
+    __userDict = None  # Dictionary of named quality identifying words
     
     def __init__(self):
         self.__orderedList = []
@@ -15,8 +17,8 @@ class SortedTorrentList:
         """Return the ordered list of torrent definitions based on quality rank.
         """
         out = []
-        for tuple in self.__orderedList:
-            out.append(tuple[0])
+        for torrentdef in self.__orderedList:
+            out.append(torrentdef[0])
         return out
     
     def Insert(self, torrentDef, trust):
@@ -29,19 +31,19 @@ class SortedTorrentList:
         inserted = False
         for i in range(len(self.__orderedList)):
             if rank > self.__orderedList[i][1]:
-                self.__orderedList.insert(i, (torrentDef,rank))
+                self.__orderedList.insert(i, (torrentDef, rank))
                 inserted = True
                 break
         if not inserted:
-            self.__orderedList.append((torrentDef,rank))
+            self.__orderedList.append((torrentDef, rank))
     
-    def SetUserDict(self, dict):
+    def SetUserDict(self, userDict):
         """Set a dictionary of terms deemed to signify quality in a 
             torrent (Like your favorite torrent release group)
         Args:
-            dict ({}) : dictionary containing favoring terms.
+            userDict ({}) : dictionary containing favoring terms.
         """
-        self.__userDict = dict
+        self.__userDict = userDict
     
     def __GetUserDict(self):
         """Returns a list of terms set by the user that signify some sort
@@ -49,16 +51,16 @@ class SortedTorrentList:
         """
         return self.__userDict
     
-    def __MatchesInDict(self, string, dict):
-        """For all of the values in 'dict' we perform fuzzy matching
+    def __MatchesInDict(self, string, userDict):
+        """For all of the values in 'userDict' we perform fuzzy matching
             to 'string'. We return the amount of matches we think we
             have.
         Args:
             string (str) : potential term to favor matching if it is in the dictionary.
-            dict {} : dictionary containing the favored keys.
+            userDict {} : dictionary containing the favored keys.
         """
         lstring = string.lower()
-        matchers = dict.values()
+        matchers = userDict.values()
         matches = 0.0
         for match in matchers:
             matcher = difflib.SequenceMatcher(None, str(match).lower(), lstring)

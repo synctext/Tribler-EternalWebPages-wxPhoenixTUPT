@@ -1,3 +1,5 @@
+"""This file contains the FenopyMovieTorrentPlugin class."""
+
 import urllib
 import urllib2
 
@@ -5,21 +7,23 @@ from bs4 import BeautifulSoup
 
 from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
-from Tribler.TUPT.Movie import Movie
 
 class FenopyMovieTorrentDef(IMovieTorrentDef):
     """TorrentFinder plugin that can find plugins on Fenopy."""
     
     def __SearchSeeder(self, tag):
+        """Search the seeders."""
         return tag.has_key('class') and 'se' in tag['class']
     
     def __SearchLeecher(self, tag):
+        """Search the leechers."""
         return tag.has_key('class') and 'le' in tag['class']
     
-    def __ExtractMagnet(self, str):
-        index = str.find('magnet')
-        eindex = str.find('"',index)
-        return str[index:eindex]
+    def __ExtractMagnet(self, source):
+        """Extract the magnet link to the torrent."""
+        index = source.find('magnet')
+        eindex = source.find('"', index)
+        return source[index:eindex]
     
     def __init__(self, tag):
         self.seeders = int(tag.find(self.__SearchSeeder).string)
@@ -31,7 +35,8 @@ class FenopyMovieTorrentDef(IMovieTorrentDef):
     def GetTorrentProviderName(self):
         return 'Fenopy'
 
-class FenopyTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+class TriblerTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+    """TorrentFinder plugin to search within Tribler. Will only work within a running Tribler instance."""
 
     def __GetTorrentDefs(self, src, movie):
         """Split our soup into search results
@@ -48,14 +53,14 @@ class FenopyTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
                     break
         return out
     
-    def __GetQueryForMovie(self, dict):
+    def __GetQueryForMovie(self, movieDict):
         """Return a search query given a movie dictionary
         """
-        return urllib.quote(dict['title'].replace(" ", "+") + "+" + str(dict['releaseYear']))
+        return urllib.quote(movieDict['title'].replace(" ", "+") + "+" + str(movieDict['releaseYear']))
     
     def GetTorrentDefsForMovie(self, movie):
         """Receive a Movie object and return a list of matching IMovieTorrentDefs
         """
-        #Construct the results page
+        # Construct the results page
         resultUrl = "http://www.fenopyproxy.com/search/" + self.__GetQueryForMovie(movie.dictionary) + ".html?order=2&quality=0&cat=3"
         return self.__GetTorrentDefs(self.UrlToPageSrc(resultUrl), movie)

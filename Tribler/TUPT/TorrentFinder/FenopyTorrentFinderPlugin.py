@@ -5,7 +5,7 @@ import urllib2
 
 from bs4 import BeautifulSoup
 
-from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
+from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin, ITorrentFinderPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
 
 class FenopyMovieTorrentDef(IMovieTorrentDef):
@@ -35,7 +35,7 @@ class FenopyMovieTorrentDef(IMovieTorrentDef):
     def GetTorrentProviderName(self):
         return 'Fenopy'
 
-class TriblerTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+class FenopyTorrentFinderPlugin(ITorrentFinderPlugin, ITorrentFinderScreenScraperPlugin):
     """TorrentFinder plugin to search within Tribler. Will only work within a running Tribler instance."""
 
     def __GetTorrentDefs(self, src, movie):

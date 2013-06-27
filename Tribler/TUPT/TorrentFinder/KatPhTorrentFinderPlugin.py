@@ -6,7 +6,7 @@ import gzip
 import StringIO
 import xml.dom.minidom as minidom
 
-from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
+from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin, ITorrentFinderPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
 
 class KatPhMovieTorrentDef(IMovieTorrentDef):
@@ -23,7 +23,7 @@ class KatPhMovieTorrentDef(IMovieTorrentDef):
         return 'kat.ph'
     
 
-class KatPhTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+class KatPhTorrentFinderPlugin(ITorrentFinderPlugin, ITorrentFinderScreenScraperPlugin):
     """TorrentFinderplugin that can find plugins from KatPh."""
 
     def __DecompressRss(self, content):

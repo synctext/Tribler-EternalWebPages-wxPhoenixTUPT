@@ -12,8 +12,8 @@ class TestKatPhTorrentFinderPlugin(unittest.TestCase):
    
     def getKatPlugin(self, plugins):
         for plugin in plugins:
-            if plugin.__class__.__name__ == "KatPhTorrentFinderPlugin":
-                return plugin
+            if plugin.name == "Kat.ph torrent finder plugin":
+                return plugin.plugin_object
             
     def thisFolder(self):
         return os.path.dirname(__file__)
@@ -30,7 +30,7 @@ class TestKatPhTorrentFinderPlugin(unittest.TestCase):
         #Load the plugin
         pluginmanager.RegisterCategory("TorrentFinder", ITorrentFinderPlugin)
         pluginmanager.LoadPlugins()
-        self.plugin = self.getKatPlugin(pluginmanager.GetPluginsForCategory("TorrentFinder"))
+        self.plugin = self.getKatPlugin(pluginmanager.GetPluginDescriptorsForCategory("TorrentFinder"))
 
     def test_ImportPlugin(self):
         '''Test if the plugin can be correctly imported using Yapsy.'''

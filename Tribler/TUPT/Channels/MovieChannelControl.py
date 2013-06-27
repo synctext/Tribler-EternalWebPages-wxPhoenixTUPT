@@ -1,4 +1,4 @@
-import time
+"""This file contains the MovieChannelControl class."""
 
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 
@@ -15,7 +15,7 @@ class MovieChannelControl(object):
     __channelManager = None
     __single = None
     
-    def __init__(self, initLater = False):
+    def __init__(self, initLater=False):
         if not initLater:
             self.initAuto()
             
@@ -36,7 +36,7 @@ class MovieChannelControl(object):
             Returns True if a MovieChannelControl exists (bool)
         """
         return MovieChannelControl.__single != None
-        hasInstance = staticmethod(hasInstance)
+    hasInstance = staticmethod(hasInstance)
 
     @staticmethod
     def delInstance():
@@ -78,23 +78,19 @@ class MovieChannelControl(object):
              year (int): The year of which the channel id has to be retrieved.
         Returns channelID (int)
         """
-        #Search for the correct channel in dispersy
+        # Search for the correct channel in dispersy
         channelName = self.GetChannelNameForYear(year)
         self.__channelManager.setSearchKeywords([channelName])
-        #Throw away the new hits, we don't care
+        # Throw away the new hits, we don't care
         totalHits, _, hits = self.__channelManager.getChannelHits() 
-        #Check which channel we need
+        # Check which channel we need
         if totalHits == 0:
-            #No existing channels found for our year,
-            #Create a new channel
+            # No existing channels found for our year,
+            # Create a new channel
             return self.__CreateChannel(channelName, self.GetChannelDescriptionForYear(year))
-        elif totalHits == 1:
-            #In the perfect world our channel already exists
-            #and is the only one of its kind
-            return hits.values()[0].id
         else:
-            #We found multiple channels that resemble our
-            #requested channel. Select the right one.
+            # We found multiple channels that resemble our
+            # requested channel. Select the right one.
             return self.__FindRightChannel(hits.values(), year)
         
     def RemoveChannelByYear(self, year):
@@ -133,14 +129,14 @@ class MovieChannelControl(object):
             out.append(value)
         return out
     
-    def __GetMyChannel(self, name, description):
+    def GetMyChannel(self, name, description):
         """Get our own channel
         Args:
             name (str)        = Name of the channel.
             description (str) = Description of the channel
         Returns channelID (int)
         """
-        hasChannel, hits = self.__channelManager.getAllMyChannels()
+        _ , hits = self.__channelManager.getAllMyChannels()
         for channel in hits:
             if channel.name == name and channel.description == description:
                 return channel.id
@@ -157,8 +153,8 @@ class MovieChannelControl(object):
         Returns channelID (int)    
         """
         self.__channelManager.createChannel(name, description)
-        channelId = self.__GetMyChannel(name, description)
-        self.__channelManager.setChannelGenerated(channelId, True) #This is not the user's personal channel
+        channelId = self.GetMyChannel(name, description)
+        self.__channelManager.setChannelGenerated(channelId, True)  # This is not the user's personal channel
         return channelId
     
     def __FilterChannels(self, channels, **requestedPropertyMap):
@@ -172,8 +168,8 @@ class MovieChannelControl(object):
         out = []
         for channel in channels:
             satisfies = True
-            for property in requestedPropertyMap:
-                if getattr(channel, property) != requestedPropertyMap[property]:
+            for channelProperty in requestedPropertyMap:
+                if getattr(channel, channelProperty) != requestedPropertyMap[channelProperty]:
                     satisfies = False
                     break
             if satisfies:
@@ -191,19 +187,19 @@ class MovieChannelControl(object):
         channelName = self.GetChannelNameForYear(year)
         channelDescription = self.GetChannelDescriptionForYear(year)
         filtered = self.__FilterChannels(channels,
-                                         name = channelName,
-                                         description = channelDescription)
+                                         name=channelName,
+                                         description=channelDescription)
         results = len(filtered)
-        #Check which channel we need
+        # Check which channel we need
         if results == 0:
-            #None of the returned results were actual TUPT channels
+            # None of the returned results were actual TUPT channels
             return self.__CreateChannel(channelName, channelDescription)
         elif results == 1:
-            #We managed to filter out the correct channel
+            # We managed to filter out the correct channel
             return filtered[0].id
         else:
-            #We encountered duplicate channels. Select the most popular
-            #(based on the number of torrents it owns)
+            # We encountered duplicate channels. Select the most popular
+            # (based on the number of torrents it owns)
             best = -1
             channelID = -1
             for channel in filtered:
@@ -211,7 +207,8 @@ class MovieChannelControl(object):
                     channelID = channel.id
             return channelID
     
-    def MergeChannelInto(myChannel, channelID):
+    #pylint: disable=E1103
+    def MergeChannelInto(self, myChannel, channelID):
         """Add all torrents in one of the users channels (myChannel) to another
             channel (channelID)
             
@@ -226,12 +223,12 @@ class MovieChannelControl(object):
                 infohash = torrent.infohash
                 otherTorrent = self.ChannelGetTorrentFromName(channelID, torrent.name)
                 if not otherTorrent:
-                    #Other channel does not have our torrent
-                    #or anything like it, insert it
+                    # Other channel does not have our torrent
+                    # or anything like it, insert it
                     self.AddTorrentToChannel(channelID, torrentDef)
                 elif otherTorrent.infohash != infohash:
-                    #Other channel already has a torrent like ours
-                    #Pick the best one to insert
+                    # Other channel already has a torrent like ours
+                    # Pick the best one to insert
                     self.ResolveTorrentConflict(channelID, torrentDef, otherTorrent.infohash)
     
     def GetChannelObjectFromID(self, channelID):
@@ -309,9 +306,9 @@ class MovieChannelControl(object):
         theirSeeds = mngr.getTorrent(otherInfoHash)
         
         if ourSeeds > theirSeeds:
-            #Our torrent has more support than the
-            #torrent already on the channel.
-            #Move our torrent into the channel.
-            #Note that both the Remove and Add calls are networked through dispersy correctly
-            self.RemoveTorrentFromChannelByInfoHash(otherInfoHash)
+            # Our torrent has more support than the
+            # torrent already on the channel.
+            # Move our torrent into the channel.
+            # Note that both the Remove and Add calls are networked through dispersy correctly
+            self.RemoveTorrentFromChannelByInfoHash(channelId, otherInfoHash)
             self.AddTorrentToChannel(channelId, torrentDef)

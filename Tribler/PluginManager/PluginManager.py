@@ -1,3 +1,5 @@
+"""This file contains the PluginManager class."""
+
 import os
 
 from yapsy.PluginManager import PluginManager as yPluginManager
@@ -36,6 +38,7 @@ class PluginManager:
         return self.__pluginsFolder + os.sep + categoryName
     
     def GetPluginFolder(self):
+        """Get the folder that contains the plug-ins (str)."""
         return self.__pluginsFolder
     
     def OverwritePluginsFolder(self, folder):

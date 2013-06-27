@@ -27,7 +27,7 @@ class TestIMDbMatcherPlugin(unittest.TestCase):
 
     def __GetIMDbPlugin(self, plugins):
         for plugin in plugins:
-            if plugin.__class__.__name__ == "TheMovieDBMatcherPlugin":
+            if plugin.__class__.__name__ == "IMDbMatcherPlugin":
                 return plugin
 
     def test_ImportPlugin(self):
@@ -49,7 +49,6 @@ class TestIMDbMatcherPlugin(unittest.TestCase):
         self.assertTrue(len(attributes) > 0)
         self.assertTrue('title' in attributes)
         self.assertTrue('releaseYear' in attributes)
-        self.assertTrue('director' in attributes)
         
     def test_ParseMovie(self):
         '''Test if the plugin can correcly retrieve movie attributes'''
@@ -62,7 +61,6 @@ class TestIMDbMatcherPlugin(unittest.TestCase):
         #Assert correct movie attributes
         self.assertEqual("The Matrix", self.__plugin.GetAttribute('title'))
         self.assertEqual(1999, self.__plugin.GetAttribute('releaseYear'))
-        self.assertEqual("Andy Wachowski", self.__plugin.GetAttribute('director'))
 
         
 if __name__ == '__main__':

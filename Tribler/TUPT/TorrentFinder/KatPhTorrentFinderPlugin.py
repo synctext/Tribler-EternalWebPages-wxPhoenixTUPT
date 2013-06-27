@@ -1,21 +1,16 @@
+"""THis file contains the KatPhMovieTorrrentFinderPlugin class."""
+
 import urllib
 import urllib2
 import gzip
 import StringIO
 import xml.dom.minidom as minidom
 
-from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderPlugin
+from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
-from Tribler.TUPT.Movie import Movie
 
 class KatPhMovieTorrentDef(IMovieTorrentDef):
-
-    seeders = None          # Set in init
-    leechers = None         # Set in init
-    highdef = None          # Set in init
-    moviedescriptor = None  # Set externally
-    torrentname = None      # Set in init
-    torrenturl = None       # Set in init
+    """IMovieTorrentdef for Katph."""
 
     def __init__(self, node):
         self.highdef = str(node.getElementsByTagName('category')[0].childNodes[0].nodeValue).find('Highres Movies') != -1
@@ -24,48 +19,25 @@ class KatPhMovieTorrentDef(IMovieTorrentDef):
         self.torrentname = str(node.getElementsByTagName('torrent:fileName')[0].childNodes[0].nodeValue)
         self.torrenturl = node.getElementsByTagName('enclosure')[0].getAttribute('url') 
 
-    def GetSeeders(self):
-        return self.seeders
-
-    def GetLeechers(self):
-        return self.leechers
-
-    def IsHighDef(self):
-        return self.highdef
-
-    def GetMovieDescriptor(self):
-        return self.moviedescriptor
-
-    def GetTorrentName(self):
-        return self.torrentname
-
-    def GetTorrentURL(self):
-        return self.torrenturl
-
     def GetTorrentProviderName(self):
         return 'kat.ph'
     
 
-class KatPhTorrentFinderPlugin(ITorrentFinderPlugin):
+class KatPhTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+    """TorrentFinderplugin that can find plugins from KatPh."""
 
     def __DecompressRss(self, content):
+        """Decrompress the RSS"""
         f = StringIO.StringIO()
         f.write(content)
         f.seek(0)
         return gzip.GzipFile(fileobj=f).read()
 
-    def __UrlToPageSrc(self, url):
-        req = urllib2.Request(url, headers={'User-Agent':"Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"})
-        opener = urllib2.build_opener()
-        contents = opener.open(req)
-        decoded = self.__DecompressRss(contents.read())
-        return decoded
-
     def __ParseResultPage(self, url, movie, n=10):
         """Given a kat.ph rss result page, return the first 'n' results
             as IMovieTorrentDefs
         """
-        page = self.__UrlToPageSrc(url)
+        page = self.__DecompressRss(self.UrlToPageSrc(url))
         dom = minidom.parseString(page)
             
         out = []
@@ -78,10 +50,10 @@ class KatPhTorrentFinderPlugin(ITorrentFinderPlugin):
                 break
         return out
 
-    def __GetQueryForMovie(self, dict):
+    def __GetQueryForMovie(self, movieDict):
         """Return a search query given a movie dictionary
         """
-        return urllib.quote(dict['title'] + " " + str(dict['releaseYear']))
+        return urllib.quote(movieDict['title'] + " " + str(movieDict['releaseYear']))
 
     def GetTorrentDefsForMovie(self, movie):
         """Receive a Movie object and return a list of matching IMovieTorrentDefs

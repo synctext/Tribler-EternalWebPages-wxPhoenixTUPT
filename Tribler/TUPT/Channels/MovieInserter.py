@@ -1,9 +1,10 @@
+"""This file contains the MovieInserter class."""
+
 import thread
 
-from Tribler.Core.TorrentDef import TorrentDef
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 
-from MovieChannelControl import MovieChannelControl
+from Tribler.TUPT.Channels.MovieChannelControl import MovieChannelControl
 
 class MovieInserter(object):
     """This class can insert movies into channels.
@@ -45,7 +46,7 @@ class MovieInserter(object):
         self.__channelController.AddTorrentToChannel(channelId, torrentDef)
         self.__channelController.RenameChannelTorrent(channelId, torrentDef, name)
         
-        #Update the front-end to show the standardized name
+        # Update the front-end to show the standardized name
         gui = GUIUtility.getInstance()
         mngr = gui.frame.librarylist.GetManager()
         mngr.refresh()
@@ -57,7 +58,7 @@ class MovieInserter(object):
             movie (Movie) : movie of which a torrent needs to be inserted.
             isHD (bool): boolean value of the movie isHD or not.
         """
-        #Get the pretty name for this torrent
+        # Get the pretty name for this torrent
         # Keeps the channel clean.
         name = self.PrettyMovieName(movie, isHD)
 
@@ -65,29 +66,29 @@ class MovieInserter(object):
         
         channelId = self.__channelController.GetChannelIDForYear(year)
         
-        #Whether or not we add our torrent to this channel,
-        #it was determined to be the right channel. So upvote it.
+        # Whether or not we add our torrent to this channel,
+        # it was determined to be the right channel. So upvote it.
         self.__channelController.UpVoteChannel(channelId)
 
-        #If we have our own version of this channel and it is not
-        #the best channel, merge our channel into the other channel.
-        myChannel = self.__GetMyChannel(self.__channelController.GetChannelNameForYear(year), 
+        # If we have our own version of this channel and it is not
+        # the best channel, merge our channel into the other channel.
+        myChannel = self.__channelController.GetMyChannel(self.__channelController.GetChannelNameForYear(year),
                                         self.__channelController.GetChannelDescriptionForYear(year))
         if myChannel and myChannel != channelId:
-            #Merge our entire channel into the other channel
+            # Merge our entire channel into the other channel
             self.__channelController.MergeChannelInto(myChannel, channelId)
-        elif not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
-            #Merge the single torrent into the other channel
-            duplicateInfoHash = self.__channelController.ChannelGetTorrentFromName(channelId, name).infohash
+        if not self.__channelController.ChannelHasTorrent(channelId, torrentDef):
+            # Merge the single torrent into the other channel
+            duplicateInfoHash = self.__channelController.ChannelGetTorrentFromName(channelId, name)
             if not duplicateInfoHash:
-                #If the torrent is not already in the channel
-                #Add it to the local database and notify the Dispersy community
-                #of the change.
+                # If the torrent is not already in the channel
+                # Add it to the local database and notify the Dispersy community
+                # of the change.
                 self.AddTorrentToChannel(channelId, torrentDef, name)
             else:
-                #There is already a definition of our torrent in this channel.
-                #Try to find out which one is the best.
-                self.__channelController.ResolveTorrentConflict(channelId, torrentDef, duplicateInfoHash)
+                # There is already a definition of our torrent in this channel.
+                # Try to find out which one is the best.
+                self.__channelController.ResolveTorrentConflict(channelId, torrentDef, duplicateInfoHash.infohash)
             
     def InsertThreaded(self, torrentDef, movie, isHD):
         """Put a movie in a threaded way in a channel given a certain torrentDef

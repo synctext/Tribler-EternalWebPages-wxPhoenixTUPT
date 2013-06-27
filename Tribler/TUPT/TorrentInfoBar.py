@@ -19,9 +19,9 @@ class TorrentInfoBar():
     __movieTorrentIterator = None
     
     
-    def __init__(self, webview, __tuptControl, movieTorrentIterator):
+    def __init__(self, webview, tuptControl, movieTorrentIterator):
         self.__webview = webview
-        self.__tuptControl = __tuptControl
+        self.__tuptControl = tuptControl
         self.__movieTorrentIterator = movieTorrentIterator
     
     def Update(self):
@@ -136,7 +136,7 @@ class TorrentInfoBar():
         # Add all elements to the infobar.
         self.__webview.SetInfoBarContents((movieLabel,), (self.__comboboxMovieTorrent,), (qualityLabel,), (self.__comboBox,), (button,))
     
-    def playButtonPressed(self, event):#IGNORE:W0613 event always given.
+    def playButtonPressed(self, event):# Event always given. pylint: disable=W0613
         """Callback for when the user wants to play the movie.
         """
         # Get selected movie
@@ -174,7 +174,7 @@ class TorrentInfoBar():
             # Set selection to 0
             self.__comboBox.SetSelection(0)
     
-    def MovieSelectionUpdated(self, event):#IGNORE:W0613 event always given.
+    def MovieSelectionUpdated(self, event):# Event always given. pylint: disable=W0613
         """Update the selection of quality when the movie selection has changed"""
         # Get selected movie
         rawMovieSelection = self.__comboboxMovieTorrent.GetSelection()

@@ -207,6 +207,7 @@ class MovieChannelControl(object):
                     channelID = channel.id
             return channelID
     
+    #pylint: disable=E1103
     def MergeChannelInto(self, myChannel, channelID):
         """Add all torrents in one of the users channels (myChannel) to another
             channel (channelID)

@@ -37,7 +37,7 @@ class ParserControl():
             result = None
             try:
                 result = plugin.ParseWebSite(url, html)
-            except Exception:# IGNORE:W0703
+            except Exception:# Defensive programming pylint: disable=W0703
                 print "Unexpected error in plugin ", name , "." , sys.exc_info()
             # Return the result
             if result != None:
@@ -78,7 +78,7 @@ class ParserControl():
         trust = 0.5
         try:
             trust = plugin_info.details.getfloat("Core", "Trust")
-        except Exception:# IGNORE:W0703
+        except Exception:# Defensive programming pylint: disable=W0703
             print sys.exc_info()
             trust = 0.5  # Not a valid float
         return trust

@@ -113,7 +113,7 @@ class TorrentFinderControl(Thread):
         parser = ConfigParser.SafeConfigParser(allow_no_value=True)
         try:
             parser.read(termFile)
-        except Exception:# IGNORE:W0703
+        except Exception:# Defensive programming pylint: disable=W0703
             return out
         if not parser.has_section('TorrentFinderTerms'):
             return out
@@ -124,7 +124,7 @@ class TorrentFinderControl(Thread):
             i += 1
         return out
     
-    def run(self):
+    def run(self):#Python standard for Threading pylint: disable=C0103
         """Start finding torrents in a threaded way."""
         self.FindTorrents()
     
@@ -145,13 +145,13 @@ class TorrentFinderControl(Thread):
             self.trust = 0.5
             try:
                 self.trust = plugin_info.details.getfloat("Core","Trust")
-            except Exception:# IGNORE:W0703
+            except Exception:# Defensive programming pylint: disable=W0703
                 self.trust = 0.5 #Not a valid float
             self.plugin = plugin_info.plugin_object
             self.name = plugin_info.name
             self.movie = movie
                 
-        def run(self):
+        def run(self):#Python standard for Threading pylint: disable=C0103
             """Collect all the torrents returned by the plugins and feed them
                 to our parent.
             """
@@ -159,7 +159,7 @@ class TorrentFinderControl(Thread):
             torrents = []
             try:
                 torrents = self.plugin.GetTorrentDefsForMovie(self.movie)
-            except Exception:# IGNORE:W0703
+            except Exception:# Defensive programming pylint: disable=W0703
                 print "Unexpected error in plugin "+ self.name +".\n", sys.exc_info()
             self.parent.ProcessTorrentDefList(torrents, self.trust)             
 

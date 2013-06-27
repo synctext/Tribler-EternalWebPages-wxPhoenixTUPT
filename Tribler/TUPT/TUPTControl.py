@@ -49,9 +49,7 @@ class TUPTControl:
         self.pluginmanager.RegisterCategory("Parser", IParserPlugin)
         self.pluginmanager.RegisterCategory("TorrentFinder", ITorrentFinderPlugin)
         self.pluginmanager.LoadPlugins()
-        
-        #
-        
+
     def CoupleGUI(self, gui):
         """Couple the gui with this TUPTControl
         Args:

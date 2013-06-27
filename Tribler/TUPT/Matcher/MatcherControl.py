@@ -60,12 +60,12 @@ class MatcherControl:
             trust = 0.5
             try:
                 trust = plugin_info.details.getfloat("Core","Trust")
-            except Exception:# IGNORE:W0703
+            except Exception:#pylint: disable=W0703
                 trust = 0.5 #Not a valid float
             #Defensivly execute the plugin.
             try:
                 self.__RegisterPluginResults(plugin_info.plugin_object, movie, trust)
-            except Exception:# IGNORE:W0703
+            except Exception:#pylint: disable=W0703
                 print "Unexpected error in plugin "+ plugin_info.name +".\n"+ sys.exc_info()[0]
         out = Movie()
         out.dictionary = self.__GetFinalDict()

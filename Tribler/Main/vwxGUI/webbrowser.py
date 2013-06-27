@@ -17,7 +17,7 @@ from Tribler.Main.vwxGUI.list import XRCPanel
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 from Tribler.Core.Libtorrent.LibtorrentMgr import LibtorrentMgr
 
-class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
+class WebBrowser(XRCPanel):#Wx.Panel inheritance of public methods. pylint: disable=R0904 
     '''WebView is a class that allows you to browse the worldwideweb.'''    
  
     __allowBrowsing = None
@@ -148,7 +148,7 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
         while (True):
             try:
                 self.__dhtFound = mngr.get_dht_nodes()
-            except Exception:#IGNORE:W0703 defensive programming
+            except Exception:#Idefensive programming pylint: disable=W0703 
                 #We are called after initialization of the LibtorrentMgr
                 #It can only mean one thing if we cannot retrieve them:
                 # the user has closed Tribler, which means we need to 
@@ -169,21 +169,21 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
         self.SetInfoBarContents((errorLabel,))
         self.ShowInfoBar()
     
-    def goBackward(self, event):#IGNORE:W0613 event always supplied
+    def goBackward(self, event):# event always supplied pylint: disable=W0613
         """Go to the previous page in history.
         Args:
             event : click event."""
         if self.webview.CanGoBack():
             self.webview.GoBack()
         
-    def goForward(self, event):#IGNORE:W0613 event always supplied
+    def goForward(self, event):# event always supplied pylint: disable=W0613
         """Go to the next page in history.
         Args:
             event : click event."""
         if self.webview.CanGoForward():
             self.webview.GoForward()
     
-    def loadURLFromAdressBar(self, event):#IGNORE:W0613 event always supplied
+    def loadURLFromAdressBar(self, event):# event always supplied pylint: disable=W0613
         '''Wait for the flag to be set to allow us to browse
             to websites (see MonitorLibtorrentMgr())and then
             Load an URL from the adressbar'''
@@ -230,7 +230,7 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
                 print >> sys.stderr, "WebBrowser: An error occurred in LoadedListener " + str(listener)
                 traceback.print_exc()
     
-    def onURLNavigating(self, event):#IGNORE:W0613 event always supplied
+    def onURLNavigating(self, event):# event always supplied pylint: disable=W0613
         """Actions to be taken when an URL is navigated to"""
         mainUrl = self.webview.GetCurrentURL()
         #Only take action when navigating to a new page. This event is also thrown for loading resources.
@@ -245,11 +245,11 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
             navigatingNewPageEvent = WebBrowser.NavigatingNewPageEvent(mainUrl)
             thread.start_new(self.__notifyLoadedListeners, (navigatingNewPageEvent,))
     
-    def UserChangeText(self, event):#IGNORE:W0613 event always supplied
+    def UserChangeText(self, event):## event always supplied pylint: disable=W0613
         '''Callback for when a user changed the text in the url-bar'''
         self.__evtUserChangedText.set()
     
-    def onURLLoaded(self, event):#IGNORE:W0613 event always supplied
+    def onURLLoaded(self, event):# event always supplied pylint: disable=W0613
         '''Actions to be taken when an URL is loaded.'''
         self.loadingGraphic.Freeze()
         if not self.__evtUserChangedText.isSet():
@@ -257,14 +257,14 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
             #If the user isn't entering new data
             self.adressBar.SetValue(self.webview.GetCurrentURL())
     
-    def OnInfoBarMouseOver(self, event): #IGNORE:W0613 event always supplied
+    def OnInfoBarMouseOver(self, event): # event always supplied pylint: disable=W0613
         """When we roll over the InfoBar, set our background to be brighter
             Set the foreground if any of our children want to stick to our style
         """
         self.infobaroverlay.SetBackgroundColour(self.infobaroverlay.COLOR_BACKGROUND_SEL)
         self.infobaroverlay.SetForegroundColour(self.infobaroverlay.COLOR_FOREGROUND_SEL)
         
-    def OnInfoBarMouseOut(self, event):#IGNORE:W0613 event always supplied
+    def OnInfoBarMouseOut(self, event):# event always supplied pylint: disable=W0613
         """When we roll off the InfoBar, set our background to be darker
             Set the foreground if any of our children want to stick to our style
         """
@@ -376,7 +376,7 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
             """Get the url of the new page (str)."""
             return self.url
         
-    class ToolBar(wx.Panel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
+    class ToolBar(wx.Panel):#Wx.Panel inheritance of public methods. pylint: disable = R0904 
         """Toolbar
             GUI class for displaying the navigation
             toolbar above the webview.
@@ -445,7 +445,7 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
             self.toolBar.Add(self.goButton, 0)
             self.Layout()
         
-    class WebpageLoadingGraphic(Thread):#IGNORE:R0904 Thread inheritance of public methods.
+    class WebpageLoadingGraphic(Thread):#Thread inheritance of public methods.pylint: disable=R0904 
         """WebpageLoadingGraphic
             Thread for the animated loading graphic next to the address bar
             in the web browser.
@@ -544,7 +544,7 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
             self.__panel.Refresh()
             self.__panel.SetToolTipString("Done loading webpage")
             
-        def run(self):#IGNORE:C0103 Python code convention needed to invoke thread.start
+        def run(self):# Python code convention needed to invoke thread.start pylint: disable=C0103
             """Loop through the animation.
                 Note that we do not block until a webpages loads:
                 this would mean we would never be able to detect
@@ -559,7 +559,7 @@ class WebBrowser(XRCPanel):#IGNORE:R0904 Wx.Panel inheritance of public methods.
                 self.__IncrementFrame()
                 time.sleep(0.05)
                 
-        def Paint(self, event):#IGNORE:W0613 event always supplied
+        def Paint(self, event):#Event always supplied pylint: disable=W0613
             """Receive an EVT_PAINT from our paintable
             
             Args:

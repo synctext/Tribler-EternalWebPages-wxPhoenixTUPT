@@ -97,10 +97,10 @@ class TorrentInfoBar():
         movieLabel.SetLabelMarkup(movieText)
             
         # ComboboxMovieTorrent
-        self.__comboboxMovieTorrent = self.__CreateStdComboCtrl(200, self.MovieSelectionUpdated)
+        comboboxMovieTorrent = self.__CreateStdComboCtrl(200, self.MovieSelectionUpdated)
         for i in validMovieIndices:
-            self.__comboboxMovieTorrent.Append(self.__movieTorrentIterator.GetMovie(i).movie.dictionary['title'])
-            self.__comboboxMovieTorrent.SetValue(self.__movieTorrentIterator.GetMovie(validMovieIndices[0]).movie.dictionary['title']) 
+            comboboxMovieTorrent.Append(self.__movieTorrentIterator.GetMovie(i).movie.dictionary['title'])
+            comboboxMovieTorrent.SetValue(self.__movieTorrentIterator.GetMovie(validMovieIndices[0]).movie.dictionary['title']) 
             
         # Register mapping of valid indices
         self.__comboboxMovieTorrentMap = validMovieIndices
@@ -111,18 +111,18 @@ class TorrentInfoBar():
         qualityLabel.SetLabelMarkup(qualityText)
         qualityLabel.SetSizeHints(-1, -1, 220, -1)
         
-        # Create the quality selection.
-        self.__comboBox = self.__CreateStdComboCtrl()
+        # Create the quality selection
+        comboBox = self.__CreateStdComboCtrl()
         movieTorrent = self.__movieTorrentIterator.GetMovie(validMovieIndices[0])
         if movieTorrent.HasHDTorrent():
-            self.__comboBox.Append(self.HDCHOICE)
+            comboBox.Append(self.HDCHOICE)
             # Set default value to HD Quality.
-            self.__comboBox.SetValue(self.HDCHOICE)  
+            comboBox.SetValue(self.HDCHOICE)  
         if movieTorrent.HasSDTorrent():
-            self.__comboBox.Append(self.SDCHOICE)
-        # Set default value to SD quality if no HD quality    
+            comboBox.Append(self.SDCHOICE)
+        # Set default value to SD quality if no HD quality  
         if not movieTorrent.HasHDTorrent():
-            self.__comboBox.SetValue(self.SDCHOICE)
+            comboBox.SetValue(self.SDCHOICE)
                    
         # Create play button.
         button = wx.Button(self.__webview.infobaroverlay)
@@ -133,8 +133,10 @@ class TorrentInfoBar():
         # Register action.
         self.__webview.Bind(wx.EVT_BUTTON, self.playButtonPressed, button)
         
-        # Add all elements to the infobar.
-        self.__webview.SetInfoBarContents((movieLabel,), (self.__comboboxMovieTorrent,), (qualityLabel,), (self.__comboBox,), (button,))
+        #Add all elements to the infobar.
+        self.__comboboxMovieTorrent = comboboxMovieTorrent
+        self.__comboBox = comboBox
+        self.__webview.SetInfoBarContents((movieLabel,), (comboboxMovieTorrent,), (qualityLabel,), (comboBox,), (button,))     
     
     def playButtonPressed(self, event):# Event always given. pylint: disable=W0613
         """Callback for when the user wants to play the movie.

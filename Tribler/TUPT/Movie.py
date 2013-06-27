@@ -7,3 +7,6 @@ class Movie(object):
     """
     
     dictionary = {}
+    
+    def __init__(self):
+        self.dictionary = {}

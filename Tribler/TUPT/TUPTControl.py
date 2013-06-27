@@ -78,11 +78,8 @@ class TUPTControl:
                 self.__infoBar.ShowParsingState()
                 threads = []
                 for movie in movies:     
-                    # Correct movie information
-                    if trust == 1:
-                        # If we fully trust the parser, skip correction
-                        movie = movie
-                    else:
+                    # Correct movie information, if we fully trust the parser: skip correction.
+                    if not trust == 1:
                         movie = self.matcherControl.CorrectMovie(movie)
                     # Find torrents corresponding to the movie.
                     torrentFinder = TorrentFinderControl(self.pluginmanager, movie, self.UpdateInforBar)

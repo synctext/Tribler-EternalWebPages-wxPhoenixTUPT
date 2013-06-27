@@ -5,7 +5,7 @@ import urllib2
 
 from bs4 import BeautifulSoup
 
-from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderPlugin
+from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
 
 class FenopyMovieTorrentDef(IMovieTorrentDef):
@@ -35,7 +35,7 @@ class FenopyMovieTorrentDef(IMovieTorrentDef):
     def GetTorrentProviderName(self):
         return 'Fenopy'
 
-class TriblerTorrentFinderPlugin(ITorrentFinderPlugin):
+class TriblerTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
     """TorrentFinder plugin to search within Tribler. Will only work within a running Tribler instance."""
 
     def __GetTorrentDefs(self, src, movie):
@@ -53,13 +53,6 @@ class TriblerTorrentFinderPlugin(ITorrentFinderPlugin):
                     break
         return out
     
-    def __UrlToPageSrc(self, url):
-        """Retrieve the HTML source."""
-        req = urllib2.Request(url, headers={'User-Agent':"Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"})
-        opener = urllib2.build_opener()
-        contents = opener.open(req)
-        return contents.read()
-    
     def __GetQueryForMovie(self, movieDict):
         """Return a search query given a movie dictionary
         """
@@ -70,4 +63,4 @@ class TriblerTorrentFinderPlugin(ITorrentFinderPlugin):
         """
         # Construct the results page
         resultUrl = "http://www.fenopyproxy.com/search/" + self.__GetQueryForMovie(movie.dictionary) + ".html?order=2&quality=0&cat=3"
-        return self.__GetTorrentDefs(self.__UrlToPageSrc(resultUrl), movie)
+        return self.__GetTorrentDefs(self.UrlToPageSrc(resultUrl), movie)

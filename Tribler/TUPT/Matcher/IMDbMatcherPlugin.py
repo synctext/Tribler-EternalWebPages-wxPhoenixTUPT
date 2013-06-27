@@ -1,9 +1,10 @@
+"""This file contains the IMDBParserplugin class."""
+
 import urllib
 import urllib2
 
 from imdb.parser.http.topBottomParser import DOMHTMLTop250Parser
 
-from Tribler.TUPT.Movie import Movie
 from Tribler.TUPT.Matcher.IMatcherPlugin import IMatcherPlugin
 
 class IMDbMatcherPlugin(IMatcherPlugin):
@@ -57,11 +58,11 @@ class IMDbMatcherPlugin(IMatcherPlugin):
         searchPageParser = DOMHTMLTop250Parser()
         results = searchPageParser.parse(html)['data']
         if results:
-            #If we have results
-            #They come in the format of a list of tuples like:
-            #(imdbID, movieDictionary)
-            #We want the first (/best) result, hence [0]
-            #We want to convert the dictionary to a movie, hence [1] 
+            # If we have results
+            # They come in the format of a list of tuples like:
+            # (imdbID, movieDictionary)
+            # We want the first (/best) result, hence [0]
+            # We want to convert the dictionary to a movie, hence [1] 
             self.result = self.__ParseMovie(results[0][1])
         else:
             self.result = {}
@@ -73,26 +74,26 @@ class IMDbMatcherPlugin(IMatcherPlugin):
         Returns the parsed movie in Movie format"""
         movie = {}
         for key in self.__items:
-            #If the metadata exists add it to the result.
+            # If the metadata exists add it to the result.
             if imdbMovie.has_key(key):
-                #Call on the found result the corresponding parse function and store this on the proper moviekey in movies.
+                # Call on the found result the corresponding parse function and store this on the proper moviekey in movies.
                 movie[self.__items[key][0]] = self.__items[key][1](imdbMovie[key])
-        #Assert we have the minimum requirements posed by the Movie object
+        # Assert we have the minimum requirements posed by the Movie object
         if ((movie.has_key('title')) or
             (movie.has_key('releaseYear'))):
             return movie
         return None
     
     @staticmethod
-    def __ParseNothing(input):
+    def __ParseNothing(parseInput):
         """ Call this function if no extra parsing is necessary"""
-        return input
+        return parseInput
     
     @staticmethod
-    def __ParseDirector(input):
+    def __ParseDirector(parseInput):
         """Converts the format of director of the IMDb parser to our format."""
-        result =[]
-        for person in input:
+        result = []
+        for person in parseInput:
             result.append(person['name'])
         return result
     

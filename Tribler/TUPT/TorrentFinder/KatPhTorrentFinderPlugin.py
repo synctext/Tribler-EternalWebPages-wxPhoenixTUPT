@@ -1,3 +1,5 @@
+"""THis file contains the KatPhMovieTorrrentFinderPlugin class."""
+
 import urllib
 import urllib2
 import gzip
@@ -6,9 +8,9 @@ import xml.dom.minidom as minidom
 
 from Tribler.TUPT.TorrentFinder.ITorrentFinderPlugin import ITorrentFinderScreenScraperPlugin
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
-from Tribler.TUPT.Movie import Movie
 
 class KatPhMovieTorrentDef(IMovieTorrentDef):
+    """IMovieTorrentdef for Katph."""
 
     def __init__(self, node):
         self.highdef = str(node.getElementsByTagName('category')[0].childNodes[0].nodeValue).find('Highres Movies') != -1
@@ -22,8 +24,10 @@ class KatPhMovieTorrentDef(IMovieTorrentDef):
     
 
 class KatPhTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
+    """TorrentFinderplugin that can find plugins from KatPh."""
 
     def __DecompressRss(self, content):
+        """Decrompress the RSS"""
         f = StringIO.StringIO()
         f.write(content)
         f.seek(0)
@@ -46,10 +50,10 @@ class KatPhTorrentFinderPlugin(ITorrentFinderScreenScraperPlugin):
                 break
         return out
 
-    def __GetQueryForMovie(self, dict):
+    def __GetQueryForMovie(self, movieDict):
         """Return a search query given a movie dictionary
         """
-        return urllib.quote(dict['title'] + " " + str(dict['releaseYear']))
+        return urllib.quote(movieDict['title'] + " " + str(movieDict['releaseYear']))
 
     def GetTorrentDefsForMovie(self, movie):
         """Receive a Movie object and return a list of matching IMovieTorrentDefs

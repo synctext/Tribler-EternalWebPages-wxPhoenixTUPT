@@ -1,10 +1,10 @@
+"""File contains the TorrentFinderControl class."""
+
 import sys
 import os
 import ConfigParser
 
 from threading import Thread
-
-from Tribler.PluginManager.PluginManager import PluginManager
 
 from Tribler.TUPT.TorrentFinder.SortedTorrentList import SortedTorrentList
 from Tribler.TUPT.TorrentFinder.IMovieTorrentDef import IMovieTorrentDef
@@ -113,7 +113,7 @@ class TorrentFinderControl(Thread):
         parser = ConfigParser.SafeConfigParser(allow_no_value=True)
         try:
             parser.read(termFile)
-        except:
+        except Exception:# Defensive programming pylint: disable=W0703
             return out
         if not parser.has_section('TorrentFinderTerms'):
             return out
@@ -124,7 +124,7 @@ class TorrentFinderControl(Thread):
             i += 1
         return out
     
-    def run(self):
+    def run(self):#Python standard for Threading pylint: disable=C0103
         """Start finding torrents in a threaded way."""
         self.FindTorrents()
     
@@ -145,28 +145,29 @@ class TorrentFinderControl(Thread):
             self.trust = 0.5
             try:
                 self.trust = plugin_info.details.getfloat("Core","Trust")
-            except:
+            except Exception:# Defensive programming pylint: disable=W0703
                 self.trust = 0.5 #Not a valid float
             self.plugin = plugin_info.plugin_object
             self.name = plugin_info.name
             self.movie = movie
                 
-        def run(self):
+        def run(self):#Python standard for Threading pylint: disable=C0103
             """Collect all the torrents returned by the plugins and feed them
                 to our parent.
             """
             #Defensivly execute the plugin.
-            list = []
+            torrents = []
             try:
-                list = self.plugin.GetTorrentDefsForMovie(self.movie)
-            except Exception:
+                torrents = self.plugin.GetTorrentDefsForMovie(self.movie)
+            except Exception:# Defensive programming pylint: disable=W0703
                 print "Unexpected error in plugin "+ self.name +".\n", sys.exc_info()
-            self.parent.ProcessTorrentDefList(list, self.trust)             
+            self.parent.ProcessTorrentDefList(torrents, self.trust)             
 
 class IllegalTorrentResultException(Exception):
     '''Exception that should be thrown when a illegal torrentresult was found on for a movie.'''
     
     def __init__(self, value):
+        super(IllegalTorrentResultException, self).__init__(value)
         self.value = value
         
     def __str__(self):

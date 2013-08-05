@@ -149,6 +149,7 @@ class WebBrowser(XRCPanel):#Wx.Panel inheritance of public methods. pylint: disa
         mngr = LibtorrentMgr.getInstance()
         while (True):
             try:
+                time.sleep(0.2)
                 self.__dhtFound = mngr.get_dht_nodes()
             except Exception:#Idefensive programming pylint: disable=W0703 
                 #We are called after initialization of the LibtorrentMgr
@@ -164,12 +165,17 @@ class WebBrowser(XRCPanel):#Wx.Panel inheritance of public methods. pylint: disa
         """If the user has to wait for libtorrent to start up,
             notify the user via the infobar.
         """
+        wx.CallAfter(self.__ShowLibtorrentWorkingError)
+    
+    def __ShowLibtorrentWorkingError(self):
+        """If the user has to wait for libtorrent to start up,
+            notify the user via the infobar.
+        """
         completion = (float(self.__dhtFound)/11.0)*100.0
         errorText = " <b>Cannot browse to page, waiting for Libtorrent to set up (%.2f%%)... Try again later</b>" % completion
         errorLabel = wx.StaticText(self.infobaroverlay)
         errorLabel.SetLabelMarkup(errorText)
         self.SetInfoBarContents((errorLabel,))
-        self.ShowInfoBar()
     
     def goBackward(self, event):# event always supplied pylint: disable=W0613
         """Go to the previous page in history.
@@ -195,7 +201,7 @@ class WebBrowser(XRCPanel):#Wx.Panel inheritance of public methods. pylint: disa
         url = self.adressBar.GetValue()
         if not urlparse.urlparse(url).scheme:
             url = 'http://' + url
-        self.webview.LoadURL(url)
+        wx.CallAfter(self.webview.LoadURL, url)
     
     def AddLoadedListener(self, listener):
         """Loaded listeners must expose a webpageLoaded(event) method
@@ -315,6 +321,7 @@ class WebBrowser(XRCPanel):#Wx.Panel inheritance of public methods. pylint: disa
         infobarSizer.Add((width, 1))
         self.infobaroverlay.SetSizer(infobarSizer)
         infobarSizer.FitInside(self.infobaroverlay)
+        self.__ShowInfoBar()
         self.infobarlock.release()
     
     # pylint: disable=E1101
@@ -354,24 +361,17 @@ class WebBrowser(XRCPanel):#Wx.Panel inheritance of public methods. pylint: disa
         self.__fixInfobarHeight(0)
         self.infobarlock.release()
 
-    def ShowInfoBar(self, finalHeight=28.0):
-        """Animated InfoBar drop down.
-            Will grow to a maximum of finalHeight if the sizer deems it appropriate
-        """
-        wx.CallAfter(self.__ShowInfoBar, finalHeight)
 
     def __ShowInfoBar(self, finalHeight=28.0):      
         """Animated InfoBar drop down.
             Will grow to a maximum of finalHeight if the sizer deems it appropriate
         """
-        self.infobarlock.acquire()
         self.infobaroverlay.SetSizeHints(-1, -1, -1, finalHeight)
 
         self.infobaroverlay.vSizer.Layout()
         self.infobaroverlay.Layout()
         self.infobaroverlay.Show()
         self.__fixInfobarHeight(finalHeight)
-        self.infobarlock.release()
             
     class NavigatingNewPageEvent(object):
         """Event thrown when navigating to a new page."""
